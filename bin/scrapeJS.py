@@ -1,12 +1,12 @@
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import time
+import pandas as pd
 '''
 ------------------------------------------------------------
 Set up webdriver (browser)
 ------------------------------------------------------------
 '''
-from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
-
 #--Set options
 #Device capability
 def setupDcaps():
@@ -21,14 +21,6 @@ DOWNLOAD_TIMEOUT = 20
 LOG_PATH = 'log/ghostdriver.log'
 
 
-#--Initiate browser
-#Replace with .Firefox(), or with the browser of choice (options could be different)
-browser = webdriver.PhantomJS(
-    desired_capabilities=dcaps,
-    service_log_path=LOG_PATH)
-browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
-
-
 
 
 
@@ -40,11 +32,17 @@ browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
 Browse and acquire html - restaurant main page
 ------------------------------------------------------------
 '''
-import time
-import pandas as pd
 
 #%%
 def collectMainPage(shopId):
+    #--Initiate browser (refresh the browser)
+    #Replace with .Firefox(), or with the browser of choice (options could be different)
+    browser = webdriver.PhantomJS(
+        desired_capabilities=dcaps,
+        service_log_path=LOG_PATH)
+    browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
+
+
     #--Targeting a main page url and navigate to that page
     url = 'http://www.dianping.com/shop/' + str(shopId)
     browser.get(url)
@@ -82,15 +80,12 @@ def collectMainPage(shopId):
     HTML_main = browser.execute_script('return document.documentElement.outerHTML')
 
 
-    #--Set a timeout between each request
-    time.sleep(3)
-
-
     #--Return the scraped contents
     return HTML_generalScore, HTML_recDish, HTML_main
 
 
 
+#%%
 HTML_generalScores = []
 HTML_recDishes = []
 
@@ -99,12 +94,16 @@ shopIds = [93230555, 90404278, 75010650, 6088238, 22303139]
 for shopId in shopIds:
     print(shopId)
     HTML_generalScore, HTML_recDish, HTML_main = collectMainPage(shopId)
-
+    
     with open(OUTPUT_PATH + 'raw/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
 
     HTML_generalScores.append(HTML_generalScore)
     HTML_recDishes.append(HTML_recDish)
+
+    #--Set a timeout between each request
+    time.sleep(3)
+
 
 df_shopInfo_HTML = pd.DataFrame({
     'shopIds'           : shopIds,
@@ -113,7 +112,7 @@ df_shopInfo_HTML = pd.DataFrame({
 })
 
 #%%
-df_shopInfo_HTML.to_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv')
+df_shopInfo_HTML.to_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv', encoding='utf-8')
 
 
 
@@ -132,6 +131,12 @@ import pandas as pd
 import numpy as np
 import re
 
+
+
+
+'''
+From soup
+'''
 soupCauldron = []
 def makeSoups(fldr):
     for filename in os.listdir(fldr):
@@ -141,15 +146,11 @@ def makeSoups(fldr):
 
 soupCauldron = makeSoups(OUTPUT_PATH + 'raw/')
 
+
 #%%
 shopIds = [93230555, 90404278, 75010650, 6088238, 22303139]
 content = open(OUTPUT_PATH + 'raw/' + str(shopIds[3]) + '.html', 'r', errors='replace', encoding='utf-8')
 soup = BeautifulSoup(content.read(), 'html5lib')
-
-
-
-soup.find(class_='good').get_text()
-
 
 
 #%%
@@ -197,5 +198,29 @@ except:
 
 #Extra info (operation hour, simple desc, parking, alias, crowd-sourced)
 try: extraInfo = soup.find(class_='other J-other').get_text()
-re.sub('\n+', '\n', re.sub(' ', '', soup.find(class_='other J-other').get_text().strip('\n ')))
+re.sub('\n+', '\n', extraInfo.strip('\n ')))
 except: extraInfo = None
+
+
+
+
+'''
+From extra df
+'''
+df_shopInfo_HTML = pd.read_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv')
+
+
+df_shopInfo_HTML.HTML_generalScores[0]
+soup_scores = BeautifulSoup(df_shopInfo_HTML.HTML_generalScores[0], 'html5lib')
+
+#5 4 3 2 1 stars
+star = re.findall('\d+', soup_scores.find(class_='stars').get_text())
+
+#口味 環境 服務
+score = re.findall('\d+\.\d+', soup_scores.find(class_='scores').get_text())
+
+
+df_shopInfo_HTML.HTML_recDishes[0]
+soup_dishes = BeautifulSoup(df_shopInfo_HTML.HTML_recDishes[0], 'html5lib')
+
+soup_dishes.find(class_='recommend-name').get_text()
