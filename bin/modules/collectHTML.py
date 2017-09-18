@@ -1,29 +1,48 @@
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import pandas as pd
+import time
+import os
+
+
+
+
+
+
+
 
 '''
 ------------------------------------------------------------
 Set up webdriver (browser)
 ------------------------------------------------------------
 '''
+#--Acquire updated user agents from: https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+userAgentCandidates = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8'
+]
+
+
 #--Set options
 #Device capability
 def setupDcaps():
     dcaps = DesiredCapabilities.PHANTOMJS
     dcaps['phantomjs.page.settings.loadImages'] = False
-    dcaps['phantomjs.page.settings.userAgent'] = 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2224.3 Safari/537.36'
+
+    #Randomly acquire 0 to 4
+    i = ((time.time() % 1 * 10) // 1) // 2
+
+    #Randomly assign user agent from candidates
+    dcaps['phantomjs.page.settings.userAgent'] = userAgentCandidates[i]
+
     return dcaps
-dcaps = setupDcaps()
 
 #Additional driver options
 DOWNLOAD_TIMEOUT = 20
 LOG_PATH = 'log/ghostdriver.log'
-
-#Assign option values
-browser = webdriver.PhantomJS(
-    desired_capabilities=dcaps,
-    service_log_path=LOG_PATH)
-browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
 
 
 
@@ -38,11 +57,11 @@ Browse and acquire html - restaurant main page
 ------------------------------------------------------------
 '''
 #%%
-def mainPage(shopId):
+def mainPage(shopId, OUTPUT_PATH):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     browser = webdriver.PhantomJS(
-        desired_capabilities=dcaps,
+        desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
     browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
 
@@ -84,5 +103,16 @@ def mainPage(shopId):
     HTML_main = browser.execute_script('return document.documentElement.outerHTML')
 
 
-    #--Return the scraped contents
-    return HTML_generalScore, HTML_recDish, HTML_main
+    #--Save to file
+    #Write additional info into 1 single csv
+    #Append to csv (when file doesn't exist, include header as well)
+    df_shopInfo_HTML = pd.DataFrame({
+        'shopIds'           : [shopId],
+        'HTML_generalScores': [HTML_generalScore],
+        'HTML_recDishes'    : [HTML_recDish]
+    })
+    df_shopInfo_HTML.to_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv', header=not os.path.exists(OUTPUT_PATH + 'df_shopInfo_HTML.csv'), index=False, encoding='utf-8', mode='a')
+
+    #Save main page, 1 restaurant per file
+    with open(OUTPUT_PATH + 'raw/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+        f.write(HTML_main)

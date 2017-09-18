@@ -1,36 +1,21 @@
 from modules import collectHTML as collect
 import pandas as pd
 import time
+import os
 
 #%%
-HTML_generalScores = []
-HTML_recDishes = []
-
 OUTPUT_PATH = '../data/'
 shopIds = [93230555, 90404278, 75010650, 6088238, 22303139]
 shopIds = [93230555]
+
 for shopId in shopIds:
     print(shopId)
-    HTML_generalScore, HTML_recDish, HTML_main = collect.mainPage(shopId)
-    
-    with open(OUTPUT_PATH + 'raw/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
-        f.write(HTML_main)
 
-    HTML_generalScores.append(HTML_generalScore)
-    HTML_recDishes.append(HTML_recDish)
+    #Collect data from each restaurant page
+    collect.mainPage(shopId, '../data/')
 
-    #--Set a timeout between each request
+    #Set a timeout between each restaurant request
     time.sleep(3)
-
-
-df_shopInfo_HTML = pd.DataFrame({
-    'shopIds'           : shopIds,
-    'HTML_generalScores': HTML_generalScores,
-    'HTML_recDishes'    : HTML_recDishes
-})
-
-#%%
-df_shopInfo_HTML.to_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv', encoding='utf-8')
 
 
 
