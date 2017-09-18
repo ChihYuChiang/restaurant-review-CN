@@ -1,7 +1,4 @@
 from modules import collectHTML as collect
-import pandas as pd
-import time
-import os
 
 #%%
 OUTPUT_PATH = '../data/'
