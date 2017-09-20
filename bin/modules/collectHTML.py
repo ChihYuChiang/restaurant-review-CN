@@ -36,7 +36,7 @@ def setupDcaps():
     i = int(((time.time() % 1 * 10) // 1) // 2)
     
     #Randomly assign user agent from candidates
-    dcaps['phantomjs.page.settings.userAgent'] = userAgentCandidates[i]
+    dcaps['phantomjs.page.settings.userAgent'] = userAgentCandidates[0]
 
     return dcaps
 
@@ -60,7 +60,28 @@ import numpy as np
 import csv
 
 LOG_PATH = 'modules/log/ghostdriver.log'
-shopId = 6088238
+shopId = 9951252
+
+url = 'http://www.dianping.com/shop/' + str(shopId)
+
+browser = webdriver.PhantomJS(
+    desired_capabilities=setupDcaps(),
+    service_log_path=LOG_PATH)
+browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
+
+browser.get(url)
+content0 = browser.execute_script('return document.documentElement.outerHTML')
+
+
+time.sleep(2)
+webdriver.ActionChains(browser
+        ).click(on_element=browser.find_element_by_css_selector('p.comment-all > a')
+        ).perform()
+content1 = browser.execute_script('return document.documentElement.outerHTML')
+
+browser.quit()
+
+
 for page in np.arange(1, 3):
     print(page)
 
@@ -76,7 +97,6 @@ for page in np.arange(1, 3):
 
     # content = browser.execute_script('return document.documentElement.outerHTML')
     # print(content)
-    content = browser.execute_script('return document.getElementsByClassName("comment-list")[0].outerHTML')
 
     with open('../data/raw/review/' + str(shopId) + '.csv', 'a', encoding='utf-8') as f:
         writer = csv.writer(f)
