@@ -1,272 +1,171 @@
-# Import libraries
 from bs4 import BeautifulSoup
 import pandas as pd
-import numpy as np
 import re
+import os
 
 
-def extractSoup(soup, filename, webSource):
-    if webSource == 'GameSpot':
-        extracted = extract_GameSpot(soup, filename)
 
-    if webSource == 'Polygon':
-        extracted = extract_Polygon(soup, filename)
 
-    if webSource == 'GamesRadar':
-        extracted = extract_GamesRadar(soup, filename)
 
-    return extracted
 
-    
-def extract_GameSpot(soup, filename):
-    # Game title
-    try: gameTitle = soup.find(class_ = 'related-game__title').a.get_text()
-    except: gameTitle = None
 
-    # GS review score
-    try: GSScore = soup.find(class_ = 'gs-score__cell').span.get_text()
-    except: GSScore = None
 
-    # User review score
-    try: userScore = soup.find(class_ = 'breakdown-reviewScores__userAvg').a.get_text()
-    except: userScore = None
+'''
+------------------------------------------------------------
+Extract info from HTML - restaurant main page
+------------------------------------------------------------
+'''
+def mainPage(soup, filename, OUTPUT_PATH):
+    #Shop name
+    try: shopName = re.sub('\n\n.*', '', soup.h1.get_text()).strip('\n ')
+    except: shopName = None
 
-    # GS review
-    GSReview = ""
+    #Category
+    try: shopCat = re.sub('[\n ]', '', soup.find(class_='breadcrumb').get_text())
+    except: shopCat = None
+
+    #Number of Branches
+    try: branchNum = re.search('([0-9]+)家分店', soup.h1.get_text()).group(1)
+    except: branchNum = None
+
+    #Number of reviews
+    try: reviewNum = soup.find(id='reviewCount').get_text().rstrip('条评论')
+    except: reviewNum = None
+
+    #Average consumption
+    try: avgConsume = soup.find(id='avgPriceTitle').get_text().strip('人均：元')
+    except: avgConsume = None
+
+    #Address
+    try: address = soup.find(class_='expand-info address').find(itemprop='street-address')['title']
+    except: address = None
+
+    #Tel Number
+    try: tel = soup.find(class_='expand-info tel').find(itemprop='tel').get_text()
+    except: tel = None
+
+    #Special tags (團、訂、外、促)
     try:
-        chunks = soup.select('#default-content p')
-        for chunk in chunks:
-            result = chunk.get_text()
-            GSReview = GSReview + ' ' + result
+        specialTags = str(soup.find(class_='promosearch-wrapper'))
+        tag_tuan = 'tag-tuan' in specialTags
+        tag_ding = 'tag-ding' in specialTags
+        tag_wai = 'tag-wai' in specialTags
+        tag_cu = 'tag-cu' in specialTags
     except:
-        GSReview = None
+        tag_tuan = None
+        tag_ding = None
+        tag_wai = None
+        tag_cu = None
 
-    # Author name
-    try: authorName = soup.find(class_ = 'authorCard-name').strong.get_text()
-    except: authorName = None
-
-    # Release date
-    try: releaseDate = soup.find(class_ = 'pod-objectStats-info__release').span.get_text()
-    except: releaseDate = None
-
-    # Game short description
-    try: shortDescript = soup.find(class_ = 'pod-objectStats-info__deck').get_text()
-    except: shortDescript = None
-
-    # ESRB category
-    try: ESRB = soup.find(class_ = 'pod-objectStats__esrb').dt.get_text()
-    except: ESRB = None
-
-    # main table
+    #Extra info (operation hour, simple desc, parking, alias, crowd-sourced)
     try:
-        df_main = {
-            'Game Title'       : gameTitle,
-            'GS Score'         : GSScore,
-            'User Score'       : userScore,
-            'Author Name'      : authorName,
-            'Release Date'     : releaseDate,
-            'Short Description': shortDescript,
-            'Review'           : GSReview,
-            'ESRB'             : ESRB,
-            'File Name'        : filename
-        }
-        df_main = pd.DataFrame(df_main, index = [1])
-    except: df_main = None
+        extraInfo = soup.find(class_='other J-other').get_text().strip('\r\n')
+        re.sub('\n+', '\n', extraInfo)
+    except: extraInfo = None
 
-    # -----------------------------------------------------
-    # Platforms
-    platform = []
+    #Good and bad tags
     try:
-        chunks = soup.select('.clearfix strong')
-        for chunk in chunks:
-            result = chunk.get_text()
-            platform.append(result)
-    except: platform = None
+        good_tags = []
+        good_nos = []
+        for chunk in soup.find_all(class_='good'):
+            tagNo = re.search('^(.+)\((\d+)\)$', chunk.get_text())
+            good_tags.append(tagNo.group(1))
+            good_nos.append(tagNo.group(2))
+    except:
+        good_tags = None
+        good_nos = None
 
-    # platform table
     try:
-        df_platform = {
-            'Game Title': np.repeat(gameTitle, len(platform)),
-            'Platform'  : platform
-        }
-        df_platform = pd.DataFrame(df_platform)
-    except: df_platform = None
+        bad_tags = []
+        bad_nos = []
+        for chunk in soup.find_all(class_='bad'):
+            tagNo = re.search('^(.+)\((\d+)\)$', chunk.get_text())
+            bad_tags.append(tagNo.group(1))
+            bad_nos.append(tagNo.group(2))
+    except:
+        bad_tags = None
+        bad_nos = None
 
-    # -----------------------------------------------------
-    # scrape for developer, publisher, genre
-    chunks = soup.find(class_ = 'pod-objectStats-additional').find_all('dd')
 
-    # Developer
-    developer = []
+    #--Output extracted info
     try:
-        results = chunks[0].find_all('a')
-        for res in results:
-            result = res.get_text()
-            developer.append(result)
-    except: developer = None
+        entry_main = pd.DataFrame({
+            'shopID'       : [filename.strip('.html')],
+            'shopName'     : [shopName],
+            'shopCat'      : [shopCat],
+            'branchNum'    : [branchNum],
+            'reviewNum'    : [reviewNum],
+            'avgConsume'   : [avgConsume],
+            'address'      : [address],
+            'tel'          : [tel],
+            'tag_tuan'     : [tag_tuan],
+            'tag_ding'     : [tag_ding],
+            'tag_wai'      : [tag_wai],
+            'tag_cu'       : [tag_cu],
+            'extraInfo'    : [extraInfo],
+            'good_tags'    : [good_tags],
+            'good_nos'     : [good_nos],
+            'bad_tags'     : [bad_tags],
+            'bad_nos'      : [bad_nos]
+        })
 
-    # developer table
+        #Use df method to Write into file
+        OUTPUT_FILE = OUTPUT_PATH + 'df_main.csv'
+        entry_main.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+    except: pass
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Extract info from HTML - restaurant main page's extra info
+------------------------------------------------------------
+'''
+def extraInfo(soup_score, soup_dish, shopId, OUTPUT_PATH):
+    #5 4 3 2 1 stars
+    try: star = re.findall('\d+', soup_score.find(class_='stars').get_text())
+    except: star = None
+
+    #口味 環境 服務
+    try: score = re.findall('\d+\.\d+', soup_score.find(class_='scores').get_text())
+    except: score = None
+
+    #Recommended dishes
     try:
-        df_developer = {
-            'Game Title': np.repeat(gameTitle, len(developer)),
-            'Developer' : developer
-        }
-        df_developer = pd.DataFrame(df_developer)
-    except: df_developer = None
+        dishes = soup_dish.find_all('a', class_='item')
 
-    # -----------------------------------------------------
-    # Publisher
-    publisher = []
+        dish_names = []
+        dish_nos = [] #Number of user rec
+        for dish in dishes:
+            dish_names.append(dish['title'])
+            dish_nos.append(dish.em.get_text().strip('()'))
+    except:
+        dish_names = None
+        dish_nos = None
+
+
+    #--Output extracted info
     try:
-        results = chunks[1].find_all('a')
-        for res in results:
-            result = res.get_text()
-            publisher.append(result)
-    except: publisher = None
+        entry_extraInfo = pd.DataFrame({
+            'shopID'       : [shopId],
+            'star_5'       : [star[0]],
+            'star_4'       : [star[1]],
+            'star_3'       : [star[2]],
+            'star_2'       : [star[3]],
+            'star_1'       : [star[4]],
+            'score_taste'  : [score[0]],
+            'score_environ': [score[1]],
+            'score_service': [score[2]],
+            'dish_names'   : [dish_names],
+            'dish_nos'     : [dish_nos]
+        })
 
-    # publisher table
-    try:
-        df_publisher = {
-            'Game Title': np.repeat(gameTitle, len(publisher)),
-            'Publisher' : publisher
-        }
-        df_publisher = pd.DataFrame(df_publisher)
-    except: df_publisher = None
-
-    # -----------------------------------------------------
-    # genre
-    genre = []
-    try:
-        results = chunks[2].find_all('a')
-        for res in results:
-            result = res.get_text()
-            genre.append(result)
-    except: genre = None
-
-    # genre table
-    try:
-        df_genre = {
-            'Game Title': np.repeat(gameTitle, len(genre)),
-            'Genre'     : genre
-        }
-        df_genre = pd.DataFrame(df_genre)
-    except: df_genre = None
-
-
-    return (df_main, df_platform, df_developer, df_publisher, df_genre)
-
-
-def extract_Polygon(soup, filename):
-    #Game Title (review title)
-    try: gameTitle = soup.h1.get_text()
-    except: gameTitle = None
-
-    try: gameTitle = re.sub(' review.*', '', gameTitle, flags=re.IGNORECASE)
-    except: gameTitle = None
-
-    #Review
-    PolyReview = ''
-    try:
-        if soup.select('#review-body p'):
-            chunks = soup.select('#review-body p')
-            for chunk in chunks:
-                result = chunk.get_text()
-                PolyReview = PolyReview + ' ' + result
-        else:
-            chunks = soup.find_all('p')
-            for chunk in chunks:
-                result = chunk.get_text()
-                PolyReview = PolyReview + ' ' + result
-    except: PolyReview = None
-
-    #Author
-    try:
-        if soup.select('#entry-top .byline a'):
-            authorName = soup.select('#entry-top .byline a')[0].get_text()
-        else:
-            authorName = soup.select('.c-byline > .c-byline__item a')[0].get_text()
-    except: authorName = None
-
-    #Verdict
-    verdict = ''
-    try:
-        chunks = soup.find_all('q')
-        for chunk in chunks:
-            result = chunk.get_text()
-            verdict = verdict + ' ' + result
-    except: verdict = None
-
-    #Wrap-up
-    wrap = ''
-    try:
-        chunks = soup.find_all('blockquote')
-        for chunk in chunks:
-            result = chunk.get_text()
-            wrap = wrap + ' ' + result
-    except: wrap = None
-
-    #Main table
-    try:
-        df_main = {
-            'Game Title' : gameTitle,
-            'Author Name': authorName,
-            'Wrap-up'    : wrap,
-            'Review'     : PolyReview,
-            'Verdict'    : verdict,
-            'File Name'  : filename
-        }
-        df_main = pd.DataFrame(df_main, index = [1])
-    except: df_main = None
-
-    return df_main
-
-    
-def extract_GamesRadar(soup, filename):
-    #Game title
-    try: gameTitle = soup.select('.review-title-long')[0].get_text()
-    except: gameTitle = None
-
-    if gameTitle == None:
-        try: gameTitle = soup.select('.review-title-medium')[0].get_text()
-        except: gameTitle = None
-    
-    if gameTitle == None:
-        try: gameTitle = soup.select('.review-title-standard')[0].get_text()
-        except: gameTitle = None
-    
-    try: gameTitle = re.sub(' review.*', '', gameTitle, flags=re.IGNORECASE)
-    except: gameTitle = None
-    
-    #Review score
-    try: ReviewerScore = soup.find(class_ = 'out-of-score-text').p.get_text()
-    except: ReviewerScore = None
-
-    try: verdict = soup.find(class_="game-verdict").get_text()
-    except: verdict = None
-
-    #Review
-    Review = ""
-    try:
-        for divs in soup.find_all('div', attrs={"class" : "text-copy bodyCopy auto"}):
-            for ptag in divs.find_all('p'):
-                result = ptag.text
-                Review = Review + ' ' + result
-    except: Review = None
-
-    #Author
-    try: authorName = soup.find(class_ = 'no-wrap by-author').span.get_text()
-    except: authorName = None
-
-    #Main table
-    try:
-        df_main = {
-            'Game Title'    : gameTitle,
-            'Reviewer Score': ReviewerScore,
-            'Verdict'       : verdict,
-            'Author Name'   : authorName,
-            'Review'        : Review
-        }
-        df_main = pd.DataFrame(df_main, index = [1])
-    except: df_main = None
-
-    return df_main
+        #Use df method to write into file
+        OUTPUT_FILE = OUTPUT_PATH + 'df_extraInfo.csv'
+        entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+    except: pass

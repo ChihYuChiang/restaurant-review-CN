@@ -33,7 +33,7 @@ def setupDcaps():
     dcaps['phantomjs.page.settings.loadImages'] = False
 
     #Randomly acquire 0 to 4
-    i = ((time.time() % 1 * 10) // 1) // 2
+    i = int(((time.time() % 1 * 10) // 1) // 2)
 
     #Randomly assign user agent from candidates
     dcaps['phantomjs.page.settings.userAgent'] = userAgentCandidates[i]
@@ -106,13 +106,28 @@ def mainPage(shopId, OUTPUT_PATH):
     #--Save to file
     #Write additional info into 1 single csv
     #Append to csv (when file doesn't exist, include header as well)
-    df_shopInfo_HTML = pd.DataFrame({
-        'shopIds'           : [shopId],
+    entry_extraInfo_HTML = pd.DataFrame({
+        'shopId'            : [shopId],
         'HTML_generalScores': [HTML_generalScore],
         'HTML_recDishes'    : [HTML_recDish]
     })
-    df_shopInfo_HTML.to_csv(OUTPUT_PATH + 'df_shopInfo_HTML.csv', header=not os.path.exists(OUTPUT_PATH + 'df_shopInfo_HTML.csv'), index=False, encoding='utf-8', mode='a')
+
+    OUTPUT_FILE = OUTPUT_PATH + 'df_extraInfo_HTML.csv'
+    entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
     with open(OUTPUT_PATH + 'raw/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Browse and acquire html - restaurant review page
+------------------------------------------------------------
+'''
