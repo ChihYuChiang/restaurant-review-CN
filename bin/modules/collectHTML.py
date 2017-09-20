@@ -34,15 +34,64 @@ def setupDcaps():
 
     #Randomly acquire 0 to 4
     i = int(((time.time() % 1 * 10) // 1) // 2)
-
+    
     #Randomly assign user agent from candidates
     dcaps['phantomjs.page.settings.userAgent'] = userAgentCandidates[i]
 
     return dcaps
 
 #Additional driver options
-DOWNLOAD_TIMEOUT = 20
+DOWNLOAD_TIMEOUT = 10
 LOG_PATH = 'log/ghostdriver.log'
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Browse and acquire html - restaurant review pages
+------------------------------------------------------------
+'''
+import numpy as np
+import csv
+
+LOG_PATH = 'modules/log/ghostdriver.log'
+shopId = 6088238
+for page in np.arange(1, 3):
+    print(page)
+
+    browser = webdriver.PhantomJS(
+        desired_capabilities=setupDcaps(),
+        service_log_path=LOG_PATH)
+    browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
+
+    url =     'http://www.dianping.com/shop/6088238/review_more?pageno=' + str(page)
+    browser.get(url)
+
+
+
+    # content = browser.execute_script('return document.documentElement.outerHTML')
+    # print(content)
+    content = browser.execute_script('return document.getElementsByClassName("comment-list")[0].outerHTML')
+
+    with open('../data/raw/review/' + str(shopId) + '.csv', 'a', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([content])
+    
+    browser.quit()
+
+    #Set a timeout between each request
+    time.sleep(2)
+
+
+reviews = pd.read_csv('../data/raw/review/' + str(shopId) + '.csv', index_col=False, header=None)
+reviews.shape
+type(reviews)
+reviews[0][0]
 
 
 
@@ -103,7 +152,11 @@ def mainPage(shopId, OUTPUT_PATH):
     HTML_main = browser.execute_script('return document.documentElement.outerHTML')
 
 
-    #--Save to file
+    #--Close browser
+    browser.quit()
+
+
+    #--Save info to file
     #Write additional info into 1 single csv
     #Append to csv (when file doesn't exist, include header as well)
     entry_extraInfo_HTML = pd.DataFrame({
@@ -112,22 +165,9 @@ def mainPage(shopId, OUTPUT_PATH):
         'HTML_recDishes'    : [HTML_recDish]
     })
 
-    OUTPUT_FILE = OUTPUT_PATH + 'df_extraInfo_HTML.csv'
+    OUTPUT_FILE = OUTPUT_PATH + 'raw/df_extraInfo_HTML.csv'
     entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
-    with open(OUTPUT_PATH + 'raw/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+    with open(OUTPUT_PATH + 'raw/main' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
-
-
-
-
-
-
-
-
-'''
-------------------------------------------------------------
-Browse and acquire html - restaurant review page
-------------------------------------------------------------
-'''

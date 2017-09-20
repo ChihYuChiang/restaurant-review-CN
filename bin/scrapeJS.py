@@ -23,7 +23,7 @@ for shopId in shopIds:
     collect.mainPage(shopId, OUTPUT_PATH)
 
     #Set a timeout between each request
-    time.sleep(3)
+    time.sleep(2)
 
 
 
@@ -36,8 +36,8 @@ Extract HTML
 soupCauldron = []
 def makeSoups(fldr):
     for filename in os.listdir(fldr):
-        content = open(fldr + filename, 'r', errors='replace', encoding='utf-8')
-        soup = BeautifulSoup(content.read(), 'html5lib')
+        with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
+            soup = BeautifulSoup(content.read(), 'html5lib')
         yield (soup, filename)
 soupCauldron = makeSoups(OUTPUT_PATH + 'raw/')
 
