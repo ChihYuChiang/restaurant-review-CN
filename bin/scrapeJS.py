@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import os
+import subprocess
 
 #Globals
 OUTPUT_PATH = '../data/'
@@ -13,7 +14,17 @@ shopIds = [93230555, 90404278, 75010650, 6088238, 22303139]
 
 
 '''
-Collect HTML
+Collect HTML by Scrapy
+'''
+#Execute Scrapy and print result
+output = subprocess.check_output([os.getcwd() + r'\scrapy\exe.cmd'], shell=True)
+print(output.decode('ascii'))
+
+
+
+
+'''
+Collect HTML by Selenium
 '''
 for shopId in shopIds:
     #Progress marker
@@ -23,7 +34,7 @@ for shopId in shopIds:
     collect.mainPage(shopId, OUTPUT_PATH)
 
     #Set a timeout between each request
-    time.sleep(2)
+    time.sleep(5)
 
 
 
