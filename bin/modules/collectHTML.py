@@ -116,9 +116,9 @@ def mainPage(shopId, OUTPUT_PATH):
         'HTML_recDishes'    : [HTML_recDish]
     })
 
-    OUTPUT_FILE = OUTPUT_PATH + 'raw/df_extraInfo_HTML.csv'
+    OUTPUT_FILE = OUTPUT_PATH + 'raw/main/df_extraInfo_HTML.csv'
     entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
-    with open(OUTPUT_PATH + 'raw/main' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+    with open(OUTPUT_PATH + 'raw/main/html' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
