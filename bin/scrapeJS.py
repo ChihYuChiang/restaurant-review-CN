@@ -9,9 +9,11 @@ import subprocess
 
 #Const
 OUTPUT_PATH = '../data/'
+RETRY = 2
 
 #Source
-urls = pd.read_csv(OUTPUT_PATH + 'raw/main/url/url_list_1.csv').url
+df_source = pd.read_csv(OUTPUT_PATH + 'raw/main/url/url_list_1.csv')
+urls = df_source.query('Number >= 100').url
 
 
 
@@ -30,16 +32,41 @@ scrapy crawl main
 '''
 Collect HTML by Selenium
 '''
-for url in urls:
-    #Progress marker
-    shopId = url.strip('http://www.dianping.com/shop/')
-    print(shopId)
+#A marker of current item in the url list (for resuming from exceptions)
+currentItem = 0
 
-    #Collect html from each restaurant main page
-    collect.mainPage(shopId, OUTPUT_PATH)
+for url in urls[currentItem:]:
+    #Retry a numbmer of times for each request
+    for attempt in range(RETRY):
+        try:
+            #Progress marker
+            shopId = url.strip('http://www.dianping.com/shop/')
+            print(shopId)
 
-    #Set a random  timeout between each request
+            #Collect html from each restaurant main page
+            collect.mainPage(shopId, OUTPUT_PATH)
+
+        except:
+            #If arrive retry cap, raise error and stop running
+            if attempt + 1 == RETRY: raise
+
+            #If not arrive retry cap, sleep and continue next attempt
+            else:
+                time.sleep(random.uniform(90, 180))
+                continue
+        
+        #If no exception occurs (successful), break from attempt
+        break
+    
+    #When request successful, update current item marker
+    currentItem += 1
+
+    #Set a random timeout between each successful request
     time.sleep(random.uniform(5, 15))
+
+
+
+
 
 
 
