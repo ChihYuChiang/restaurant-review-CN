@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import pandas as pd
 import time
+import random
 import os
 import sys
 
@@ -65,11 +66,59 @@ SERVICE_ARGS = [
 
 '''
 ------------------------------------------------------------
+Browse and acquire html - restaurant review page
+------------------------------------------------------------
+'''
+def reviewPage(shopId, outputPath, pageLimit, **kwargs):
+    #--Initiate browser (refresh the browser)
+    #Replace with .Firefox(), or with the browser of choice (options could be different)
+    #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
+    browser = webdriver.PhantomJS(
+        desired_capabilities=setupDcaps(),
+        service_log_path=LOG_PATH)
+    browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)    
+
+
+    #--Initialize output object
+    HTML_reviews = ''
+
+
+    #--Browse and screenshot the first `pageLimit` pages
+    for p in range(1, pageLimit + 1):
+        #Progress marker
+        print('p{}'.format(p))
+
+        #Targeting a url and navigate to that page
+        url = 'http://www.dianping.com/shop/{0}/review_more?pageno={1}'.format(str(shopId), p)
+        browser.get(url)
+
+        #Screenshot
+        HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
+
+        #Delay between each page
+        time.sleep(random.uniform(5, 10))
+
+
+    #--Close browser
+    browser.quit()
+
+    #Save reviews, 1 restaurant per file
+    with open(outputPath + 'raw/review/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+        f.write(HTML_reviews)
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
 Browse and acquire html - restaurant main page
 ------------------------------------------------------------
 '''
-#%%
-def mainPage(shopId, OUTPUT_PATH):
+def mainPage(shopId, outputPath, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
@@ -132,9 +181,9 @@ def mainPage(shopId, OUTPUT_PATH):
         'HTML_recDishes'    : [HTML_recDish]
     })
 
-    OUTPUT_FILE = OUTPUT_PATH + 'raw/main/df_extraInfo_HTML.csv'
+    OUTPUT_FILE = outputPath + 'raw/main/df_extraInfo_HTML.csv'
     entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
-    with open(OUTPUT_PATH + 'raw/main/html/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+    with open(outputPath + 'raw/main/html/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)

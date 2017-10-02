@@ -10,59 +10,64 @@ import subprocess
 #Const
 OUTPUT_PATH = '../data/'
 RETRY = 2
+PAGE_LIMIT = 10 #How many review pages per restaurant to save
 
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Collect HTML by Selenium
+------------------------------------------------------------
+'''
 #Source
 df_source = pd.read_csv(OUTPUT_PATH + 'raw/main/url/url_list_1.csv')
-urls = df_source.query('Number >= 100').url
+items = df_source.query('Number >= 100')
 
-
-
-
-'''
-Collect HTML by Scrapy
-
-Run in terminal:
-cd scrapy
-scrapy crawl main
-'''
-
-
-
-
-'''
-Collect HTML by Selenium
-'''
 #A marker of current item in the url list (for resuming from exceptions)
 currentItem = 0
 
-for url in urls[currentItem:]:
-    #Retry a numbmer of times for each request
-    for attempt in range(RETRY):
-        try:
-            #Progress marker
-            shopId = url.strip('http://www.dianping.com/shop/')
-            print(shopId)
+def collectBySelenium(items, startAt, collect):
+    for index, item in items[startAt:].iterrows():
+        #Retry a numbmer of times for each request
+        for attempt in range(RETRY):
+            try:
+                #Progress marker
+                shopId = item.url.strip('http://www.dianping.com/shop/')
+                print(shopId)
 
-            #Collect html from each restaurant main page
-            collect.mainPage(shopId, OUTPUT_PATH)
+                #Acquire valid review page number (20 reviews per page)
+                pageValid = (item.Number // 20) + 1
 
-        except:
-            #If arrive retry cap, raise error and stop running
-            if attempt + 1 == RETRY: raise
+                #Collect html from each restaurant
+                collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
 
-            #If not arrive retry cap, sleep and continue next attempt
-            else:
-                time.sleep(random.uniform(90, 180))
-                continue
+            except:
+                #If arrive retry cap, raise error and stop running
+                if attempt + 1 == RETRY: raise
+
+                #If not arrive retry cap, sleep and continue next attempt
+                else:
+                    time.sleep(random.uniform(90, 180))
+                    continue
+            
+            #If no exception occurs (successful), break from attempt
+            break
         
-        #If no exception occurs (successful), break from attempt
-        break
-    
-    #When request successful, update current item marker
-    currentItem += 1
+        #When request successful, update current item marker
+        global currentItem
+        currentItem += 1
 
-    #Set a random timeout between each successful request
-    time.sleep(random.uniform(5, 15))
+        #Set a random timeout between each successful request
+        time.sleep(random.uniform(5, 15))
+
+#Perform collection by setting proper callback
+#`collect.mainPage`, `collect.reviewPage`
+collectBySelenium(items[0:2], currentItem, collect.reviewPage)
 
 
 
@@ -72,7 +77,25 @@ for url in urls[currentItem:]:
 
 
 '''
+------------------------------------------------------------
+Collect HTML by Scrapy
+------------------------------------------------------------
+'''
+#Run in terminal:
+#cd scrapy
+#scrapy crawl main
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
 Extract HTML
+------------------------------------------------------------
 '''
 #--Main page
 #Make all html files as soups in a soup cauldron
