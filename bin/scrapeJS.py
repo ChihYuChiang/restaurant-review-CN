@@ -13,7 +13,7 @@ RETRY = 2
 PAGE_LIMIT = 10 #How many review pages per restaurant to save
 
 #Establish necessary folder structure
-paths = ['log/',
+paths = [
     '{}raw/main/'.format(OUTPUT_PATH),
     '{}raw/review/'.format(OUTPUT_PATH),
     '{}raw/url/'.format(OUTPUT_PATH)
