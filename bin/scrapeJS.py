@@ -12,8 +12,14 @@ OUTPUT_PATH = '../data/'
 RETRY = 2
 PAGE_LIMIT = 10 #How many review pages per restaurant to save
 
-
-
+#Establish necessary folder structure
+paths = ['log/',
+    '{}raw/main/'.format(OUTPUT_PATH),
+    '{}raw/review/'.format(OUTPUT_PATH),
+    '{}raw/url/'.format(OUTPUT_PATH)
+]
+for p in paths:
+    if not os.path.exists(p): os.makedirs(p)
 
 
 
@@ -25,7 +31,7 @@ Collect HTML by Selenium
 ------------------------------------------------------------
 '''
 #Source
-df_source = pd.read_csv(OUTPUT_PATH + 'raw/main/url/url_list_1.csv')
+df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/url_list_1.csv')
 items = df_source.query('Number >= 100')
 
 #A marker of current item in the url list (for resuming from exceptions)

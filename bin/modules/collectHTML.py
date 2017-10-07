@@ -49,6 +49,9 @@ def setupDcaps():
 DOWNLOAD_TIMEOUT = 20
 LOG_PATH = 'log/ghostdriver.log'
 
+#Establish necessary folder structure
+if not os.path.exists(LOG_PATH.split('/')[0]): os.makedirs(LOG_PATH.split('/')[0])
+
 #Can be added to webdriver.PhantomJS(service_args)
 #Currently unused
 SERVICE_ARGS = [
@@ -181,9 +184,9 @@ def mainPage(shopId, outputPath, **kwargs):
         'HTML_recDishes'    : [HTML_recDish]
     })
 
-    OUTPUT_FILE = outputPath + 'raw/main/df_extraInfo_HTML.csv'
+    OUTPUT_FILE = outputPath + 'raw/df_extraInfo_HTML.csv'
     entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
-    with open(outputPath + 'raw/main/html/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
+    with open(outputPath + 'raw/main/' + str(shopId) + '.html', 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
