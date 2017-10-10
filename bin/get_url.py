@@ -5,15 +5,13 @@ from bs4 import BeautifulSoup
 import csv
 import numpy as np
 import pandas as pd
+import time
+import random
 
 import os
 import sys
 
-# pd.read_csv(r'..\data\raw\url\dianping_zone_2.csv', sep='/', header=None)
-
-with open(r'..\data\raw\url\dianping_zone_2.csv', 'r') as f:
-  reader = csv.reader(f)  
-  zone_list = list(reader)
+zone_list = list(pd.read_csv(r'..\data\raw\url\dianping_zone_2.csv', sep=',', header=None)[0])
 
 def getURL_dianping(url, page):
     reviewLinks = []
@@ -63,15 +61,18 @@ def getURL_dianping(url, page):
     df_main = pd.DataFrame(df_main, index = None)
     return df_main
 
-DF_final = pd.DataFrame()
-
-for i in np.arange(1,2):
-     for j in np.arange(1,51):
-         DF = getURL_dianping(zone_list[i][0], j)
+for i in np.arange(3,5):
+    DF_final = pd.DataFrame()
+    id = zone_list[i].split('/')[-1][:-5]
+    for j in np.arange(1,51):
+         DF = getURL_dianping(zone_list[i], j)
          DF_final = pd.concat([DF_final, DF])
+         time.sleep(random.uniform(1, 5))
+    DF_final.to_csv(r'..\data\raw\url\{}.csv'.format(id))
+    print(r'{} - done!'.format(id))
+    time.sleep(random.uniform(30, 90))
 
 
-DF_final.to_csv(r'..\data\raw\url\url_list2_1.csv')
 
 # else: reviewLinks = None
 
