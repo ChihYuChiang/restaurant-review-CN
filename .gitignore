@@ -91,7 +91,7 @@ ENV/
 # data files
 data/
 img/
-reference/
+ref/
 log/
 
 # temp files
