@@ -61,7 +61,7 @@ def getURL_dianping(url, page):
     df_main = pd.DataFrame(df_main, index = None)
     return df_main
 
-for i in np.arange(3,5):
+for i in np.arange(134,200):
     DF_final = pd.DataFrame()
     id = zone_list[i].split('/')[-1][:-5]
     for j in np.arange(1,51):
@@ -71,7 +71,6 @@ for i in np.arange(3,5):
     DF_final.to_csv(r'..\data\raw\url\{}.csv'.format(id))
     print(r'{} - done!'.format(id))
     time.sleep(random.uniform(30, 90))
-
 
 
 # else: reviewLinks = None
@@ -166,3 +165,12 @@ for i in np.arange(3,5):
 # # # for i in zone_list:
 # # #     # for i in list(range(1, 50)):
 # # #     print(i)
+
+#Combine main page lists
+lis = pd.DataFrame()
+for filename in os.listdir('../data/raw/test/'):
+    if filename[0] == 'r':
+        li = pd.read_csv('../data/raw/test/' + filename)
+        li['source'] = filename.strip('.csv')
+        lis = lis.append(li)
+print(lis.drop(lis.columns[0], axis=1))
