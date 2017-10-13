@@ -172,5 +172,5 @@ for filename in os.listdir('../data/raw/test/'):
     if filename[0] == 'r':
         li = pd.read_csv('../data/raw/test/' + filename)
         li['source'] = filename.strip('.csv')
-        lis = lis.append(li)
+        lis = lis.append(li, ignore_index=True)
 print(lis.drop(lis.columns[0], axis=1))
