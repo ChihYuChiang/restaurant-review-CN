@@ -11,7 +11,7 @@ import random
 import os
 import sys
 
-zone_list = list(pd.read_csv(r'..\data\raw\url\dianping_zone_2.csv', sep=',', header=None)[0])
+zone_list = list(pd.read_csv(r'..\data\raw\url\dianping_zone.csv', sep=',', header=None)[0])
 
 def getURL_dianping(url, page):
     reviewLinks = []
@@ -61,14 +61,14 @@ def getURL_dianping(url, page):
     df_main = pd.DataFrame(df_main, index = None)
     return df_main
 
-for i in np.arange(134,200):
+for i in np.arange(0,300):
     DF_final = pd.DataFrame()
     id = zone_list[i].split('/')[-1][:-5]
     for j in np.arange(1,51):
          DF = getURL_dianping(zone_list[i], j)
          DF_final = pd.concat([DF_final, DF])
          time.sleep(random.uniform(1, 5))
-    DF_final.to_csv(r'..\data\raw\url\{}.csv'.format(id))
+    DF_final.to_csv(r'..\data\raw\url\r{}.csv'.format(id))
     print(r'{} - done!'.format(id))
     time.sleep(random.uniform(30, 90))
 
@@ -168,9 +168,10 @@ for i in np.arange(134,200):
 
 #Combine main page lists
 lis = pd.DataFrame()
-for filename in os.listdir('../data/raw/test/'):
+for filename in os.listdir('../data/raw/url/'):
     if filename[0] == 'r':
-        li = pd.read_csv('../data/raw/test/' + filename)
+        li = pd.read_csv('../data/raw/url/' + filename)
         li['source'] = filename.strip('.csv')
         lis = lis.append(li, ignore_index=True)
-print(lis.drop(lis.columns[0], axis=1))
+
+lis.drop(lis.columns[0], axis=1).drop_duplicates(subset='url').to_csv(r'..\data\raw\url\dianping_lis.csv')
