@@ -24,56 +24,58 @@ for p in paths:
 
 
 
-
 '''
 ------------------------------------------------------------
 Collect HTML by Selenium
 ------------------------------------------------------------
 '''
-#Source
-df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/url_list_1.csv')
-items = df_source.query('Number >= 100')
+#Section switch
+if True:
 
-#A marker of current item in the url list (for resuming from exceptions)
-currentItem = 0
+    #Source
+    df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
+    items = df_source.query('Number >= 100')
 
-def collectBySelenium(items, startAt, collect):
-    for index, item in items[startAt:].iterrows():
-        #Retry a numbmer of times for each request
-        for attempt in range(RETRY):
-            try:
-                #Progress marker
-                shopId = item.url.strip('http://www.dianping.com/shop/')
-                print(shopId)
+    #A marker of current item in the url list (for resuming from exceptions)
+    currentItem = 0
 
-                #Acquire valid review page number (20 reviews per page)
-                pageValid = (item.Number // 20) + 1
+    def collectBySelenium(items, startAt, collect):
+        for index, item in items[startAt:].iterrows():
+            #Retry a numbmer of times for each request
+            for attempt in range(RETRY):
+                try:
+                    #Progress marker
+                    shopId = item.url.strip('http://www.dianping.com/shop/')
+                    print(shopId)
 
-                #Collect html from each restaurant
-                collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
+                    #Acquire valid review page number (20 reviews per page)
+                    pageValid = (item.Number // 20) + 1
 
-            except:
-                #If arrive retry cap, raise error and stop running
-                if attempt + 1 == RETRY: raise
+                    #Collect html from each restaurant
+                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
 
-                #If not arrive retry cap, sleep and continue next attempt
-                else:
-                    time.sleep(random.uniform(90, 180))
-                    continue
+                except:
+                    #If arrive retry cap, raise error and stop running
+                    if attempt + 1 == RETRY: raise
+
+                    #If not arrive retry cap, sleep and continue next attempt
+                    else:
+                        time.sleep(random.uniform(90, 180))
+                        continue
+                
+                #If no exception occurs (successful), break from attempt
+                break
             
-            #If no exception occurs (successful), break from attempt
-            break
-        
-        #When request successful, update current item marker
-        global currentItem
-        currentItem += 1
+            #When request successful, update current item marker
+            global currentItem
+            currentItem += 1
 
-        #Set a random timeout between each successful request
-        time.sleep(random.uniform(5, 15))
+            #Set a random timeout between each successful request
+            time.sleep(random.uniform(4, 10))
 
-#Perform collection by setting proper callback
-#`collect.mainPage`, `collect.reviewPage`
-collectBySelenium(items[0:2], currentItem, collect.reviewPage)
+    #Perform collection by setting proper callback
+    #`collect.mainPage`, `collect.reviewPage`
+    collectBySelenium(items[0:2], currentItem, collect.mainPage)
 
 
 
@@ -103,30 +105,33 @@ Collect HTML by Scrapy
 Extract HTML
 ------------------------------------------------------------
 '''
-#--Main page
-#Make all html files as soups in a soup cauldron
-soupCauldron = []
-def makeSoups(fldr):
-    for filename in os.listdir(fldr):
-        with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
-            soup = BeautifulSoup(content.read(), 'html5lib')
-        yield (soup, filename)
-soupCauldron = makeSoups(OUTPUT_PATH + 'raw/')
+#Section switch
+if False:
 
-#Extract each soup and write into a df (in the module)
-for soup, filename in soupCauldron:    
-    print(filename)
-    extract.mainPage(soup, filename, OUTPUT_PATH)
+    #--Main page
+    #Make all html files as soups in a soup cauldron
+    soupCauldron = []
+    def makeSoups(fldr):
+        for filename in os.listdir(fldr):
+            with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
+                soup = BeautifulSoup(content.read(), 'html5lib')
+            yield (soup, filename)
+    soupCauldron = makeSoups(OUTPUT_PATH + 'raw/')
+
+    #Extract each soup and write into a df (in the module)
+    for soup, filename in soupCauldron:    
+        print(filename)
+        extract.mainPage(soup, filename, OUTPUT_PATH)
 
 
-#--Extra shop info in main page
-#Read the corresponding df
-df_extraInfo_HTML = pd.read_csv(OUTPUT_PATH + 'df_extraInfo_HTML.csv')
+    #--Extra shop info in main page
+    #Read the corresponding df
+    df_extraInfo_HTML = pd.read_csv(OUTPUT_PATH + 'df_extraInfo_HTML.csv')
 
-#Extract each row and write into a new df (in the module)
-for index, row in df_extraInfo_HTML.iterrows():
-    #Make html text into soups
-    soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
-    soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
-    
-    extract.extraInfo(soup_score, soup_dish, row['shopId'], OUTPUT_PATH)
+    #Extract each row and write into a new df (in the module)
+    for index, row in df_extraInfo_HTML.iterrows():
+        #Make html text into soups
+        soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
+        soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
+        
+        extract.extraInfo(soup_score, soup_dish, row['shopId'], OUTPUT_PATH)

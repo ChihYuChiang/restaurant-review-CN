@@ -1,5 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 import pandas as pd
 import time
 import random
@@ -99,7 +102,7 @@ def reviewPage(shopId, outputPath, pageLimit, **kwargs):
         HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
 
         #Delay between each page
-        time.sleep(random.uniform(5, 10))
+        time.sleep(random.uniform(3, 7))
 
 
     #--Close browser
@@ -165,8 +168,12 @@ def mainPage(shopId, outputPath, **kwargs):
             ).click(on_element=browser.find_element_by_css_selector('.basic-info > a.J-unfold')
             ).perform()
 
+        #Wait until certain elements loaded
+        WebDriverWait(browser, 5).until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.sub-title')))
+
         #Get HTML
-        HTML_main = browser.execute_script('return document.documentElement.outerHTML')
+        HTML_main = browser.execute_script('return document.getElementById("body").innerHTML')
+
     except:
         HTML_main = str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
 
@@ -184,7 +191,7 @@ def mainPage(shopId, outputPath, **kwargs):
         'HTML_recDishes'    : [HTML_recDish]
     })
 
-    OUTPUT_FILE = outputPath + 'raw/df_extraInfo_HTML.csv'
+    OUTPUT_FILE = outputPath + 'raw/main/df_extraInfo_HTML.csv'
     entry_extraInfo_HTML.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
 
     #Save main page, 1 restaurant per file
