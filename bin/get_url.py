@@ -20,11 +20,9 @@ def getURL_dianping(url, page):
 
     url_final = url + 'p' + str(page)
 
-    try:
-        response = request.urlopen(url_final)
-        html = response.read().decode('utf-8')
-        html = BeautifulSoup(html, 'html.parser')
-    except: html = None
+    response = request.urlopen(url_final)
+    html = response.read().decode('utf-8')
+    html = BeautifulSoup(html, 'html.parser')
 
     try:
         chunks = html.findAll('div', attrs = {'class':'txt'})
@@ -61,17 +59,32 @@ def getURL_dianping(url, page):
     df_main = pd.DataFrame(df_main, index = None)
     return df_main
 
-for i in np.arange(0,300):
-    DF_final = pd.DataFrame()
-    id = zone_list[i].split('/')[-1][:-5]
-    for j in np.arange(1,51):
-         DF = getURL_dianping(zone_list[i], j)
-         DF_final = pd.concat([DF_final, DF])
-         time.sleep(random.uniform(1, 5))
+RETRY = 2
+for i in np.arange(161,300):
+    for attempt in range(RETRY):
+        try:
+            DF_final = pd.DataFrame()
+            id = zone_list[i].split('/')[-1][:-5]
+            for j in np.arange(1,51):
+                DF = getURL_dianping(zone_list[i], j)
+                DF_final = pd.concat([DF_final, DF])
+                time.sleep(random.uniform(1, 5))
+
+        except:
+            #If arrive retry cap, raise error and stop running
+            if attempt + 1 == RETRY: raise
+
+            #If not arrive retry cap, sleep and continue next attempt
+            else:
+                time.sleep(random.uniform(30, 90))
+                continue
+        
+        #If no exception occurs (successful), break from attempt
+        break
+            
     DF_final.to_csv(r'..\data\raw\url\r{}.csv'.format(id))
     print(r'{} - done!'.format(id))
     time.sleep(random.uniform(30, 90))
-
 
 # else: reviewLinks = None
 
