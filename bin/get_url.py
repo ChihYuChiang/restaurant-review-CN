@@ -60,7 +60,7 @@ def getURL_dianping(url, page):
     return df_main
 
 RETRY = 2
-for i in np.arange(161,300):
+for i in np.arange(166,300):
     for attempt in range(RETRY):
         try:
             DF_final = pd.DataFrame()
@@ -76,7 +76,8 @@ for i in np.arange(161,300):
 
             #If not arrive retry cap, sleep and continue next attempt
             else:
-                time.sleep(random.uniform(30, 90))
+                time.sleep(random.uniform(10, 30))
+                print(r'{0} - retry {1}'.format(id, attempt + 1))
                 continue
         
         #If no exception occurs (successful), break from attempt
@@ -187,4 +188,4 @@ for filename in os.listdir('../data/raw/url/'):
         li['source'] = filename.strip('.csv')
         lis = lis.append(li, ignore_index=True)
 
-lis.drop(lis.columns[0], axis=1).drop_duplicates(subset='url').to_csv(r'..\data\raw\url\dianping_lis.csv')
+lis.drop(lis.columns[0], axis=1).drop_duplicates(subset='url').to_csv(r'..\data\raw\url\dianping_lis.csv', index=False)

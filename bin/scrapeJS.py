@@ -46,7 +46,6 @@ if True:
                 try:
                     #Progress marker
                     shopId = item.url.strip('http://www.dianping.com/shop/')
-                    print(shopId)
 
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
@@ -61,6 +60,7 @@ if True:
                     #If not arrive retry cap, sleep and continue next attempt
                     else:
                         time.sleep(random.uniform(90, 180))
+                        print(r'{0} - retry {1}'.format(shopId, attempt + 1))
                         continue
                 
                 #If no exception occurs (successful), break from attempt
@@ -69,6 +69,9 @@ if True:
             #When request successful, update current item marker
             global currentItem
             currentItem += 1
+
+            #Progress marker
+            print(r'{} - done!'.format(shopId))
 
             #Set a random timeout between each successful request
             time.sleep(random.uniform(4, 10))
