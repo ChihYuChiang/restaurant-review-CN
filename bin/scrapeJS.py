@@ -9,7 +9,7 @@ import subprocess
 
 #Const
 OUTPUT_PATH = '../data/'
-RETRY = 2
+RETRY = 3
 PAGE_LIMIT = 10 #How many review pages per restaurant to save
 
 #Establish necessary folder structure
@@ -78,7 +78,7 @@ if True:
 
     #Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[0:2], currentItem, collect.mainPage)
+    collectBySelenium(items[0:2000], currentItem, collect.mainPage)
 
 
 
