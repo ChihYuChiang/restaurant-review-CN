@@ -9,8 +9,7 @@ import subprocess
 
 #Const
 OUTPUT_PATH = '../data/'
-RETRY = 3
-PAGE_LIMIT = 10 #How many review pages per restaurant to save
+PAGE_LIMIT = 5 #How many review pages per restaurant to save
 
 #Establish necessary folder structure
 paths = [
@@ -36,39 +35,16 @@ if True:
     df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
     items = df_source.query('Number >= 100')
 
-    #A marker of current item in the url list (for resuming from exceptions)
-    currentItem = 0
+    def collectBySelenium(items, collect):
+        for index, item in items.iterrows():
+            #Progress marker
+            shopId = item.url.strip('http://www.dianping.com/shop/')
 
-    def collectBySelenium(items, startAt, collect):
-        for index, item in items[startAt:].iterrows():
-            #Retry a numbmer of times for each request
-            for attempt in range(RETRY):
-                try:
-                    #Progress marker
-                    shopId = item.url.strip('http://www.dianping.com/shop/')
+            #Acquire valid review page number (20 reviews per page)
+            pageValid = (item.Number // 20) + 1
 
-                    #Acquire valid review page number (20 reviews per page)
-                    pageValid = (item.Number // 20) + 1
-
-                    #Collect html from each restaurant
-                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
-
-                except:
-                    #If arrive retry cap, raise error and stop running
-                    if attempt + 1 == RETRY: raise
-
-                    #If not arrive retry cap, sleep and continue next attempt
-                    else:
-                        time.sleep(random.uniform(90, 180))
-                        print(r'{0} - retry {1}'.format(shopId, attempt + 1))
-                        continue
-                
-                #If no exception occurs (successful), break from attempt
-                break
-            
-            #When request successful, update current item marker
-            global currentItem
-            currentItem += 1
+            #Collect html from each restaurant
+            collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
 
             #Progress marker
             print(r'{} - done!'.format(shopId))
@@ -78,7 +54,7 @@ if True:
 
     #Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[0:2000], currentItem, collect.mainPage)
+    collectBySelenium(items[4880:5000], collect.mainPage) #Last: 17034
 
 
 
