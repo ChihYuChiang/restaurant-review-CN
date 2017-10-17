@@ -9,6 +9,7 @@ import subprocess
 
 #Const
 OUTPUT_PATH = '../data/'
+RETRY = 3 #How many times to retry when error in module
 PAGE_LIMIT = 5 #How many review pages per restaurant to save
 
 #Establish necessary folder structure
@@ -37,14 +38,30 @@ if True:
 
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
-            #Progress marker
-            shopId = item.url.strip('http://www.dianping.com/shop/')
+            #Retry several times for general errors not caught in the module
+            for attempt in range(RETRY):
+                try:
+                    #Progress marker
+                    shopId = item.url.strip('http://www.dianping.com/shop/')
 
-            #Acquire valid review page number (20 reviews per page)
-            pageValid = (item.Number // 20) + 1
+                    #Acquire valid review page number (20 reviews per page)
+                    pageValid = (item.Number // 20) + 1
 
-            #Collect html from each restaurant
-            collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
+                    #Collect html from each restaurant
+                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
+
+                except:
+                    #If arrive retry cap, raise error and stop running
+                    if attempt + 1 == RETRY: raise
+
+                    #If not arrive retry cap, sleep and continue next attempt
+                    else:
+                        time.sleep(random.uniform(30, 90))
+                        print(r'{0} - retry {1}'.format(shopId, attempt + 1))
+                        continue
+                
+                #If no exception occurs (successful), break from attempt
+                break
 
             #Progress marker
             print(r'{} - done!'.format(shopId))
@@ -54,7 +71,7 @@ if True:
 
     #Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[4880:5000], collect.mainPage) #Last: 17034
+    collectBySelenium(items[5570:7000], collect.mainPage) #Last: 17034 5560-5570
 
 
 
