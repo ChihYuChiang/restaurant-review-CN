@@ -5,11 +5,11 @@ import pandas as pd
 import time
 import random
 import os
-import subprocess
+import sys
 
 #Const
 OUTPUT_PATH = '../data/'
-RETRY = 3 #How many times to retry when error in module
+RETRY = 5 #How many times to retry when error in module
 PAGE_LIMIT = 5 #How many review pages per restaurant to save
 
 #Establish necessary folder structure
@@ -54,9 +54,12 @@ if True:
                     #If arrive retry cap, raise error and stop running
                     if attempt + 1 == RETRY: raise
 
-                    #If not arrive retry cap, sleep and continue next attempt
+                    #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
-                        time.sleep(random.uniform(30, 90))
+                        print('{0} {1}'.format(
+                            str(sys.exc_info()[0]),
+                            str(sys.exc_info()[1])))
+                        time.sleep(random.uniform(20, 40))
                         print(r'{0} - retry {1}'.format(shopId, attempt + 1))
                         continue
                 
@@ -67,11 +70,11 @@ if True:
             print(r'{} - done!'.format(shopId))
 
             #Set a random timeout between each successful request
-            time.sleep(random.uniform(4, 10))
+            time.sleep(random.uniform(3, 7))
 
     #Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[5570:7000], collect.mainPage) #Last: 17034 5560-5570
+    collectBySelenium(items[14415:15000], collect.mainPage) #Last: 17034 10520-10530
 
 
 

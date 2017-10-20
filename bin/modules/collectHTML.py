@@ -23,11 +23,11 @@ Set up webdriver (browser)
 '''
 #--Acquire updated user agents from: https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
 userAgentCandidates = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8'
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38'
 ]
 
 
@@ -176,7 +176,7 @@ def mainPage(shopId, outputPath, **kwargs):
     #Actions
     try:
         #Wait until certain elements loaded
-        WebDriverWait(browser, 5).until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.sub-title')))
+        WebDriverWait(browser, 10).until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.sub-title')))
 
         #Perform action
         webdriver.ActionChains(browser
@@ -186,8 +186,7 @@ def mainPage(shopId, outputPath, **kwargs):
         #Get HTML
         HTML_main = browser.execute_script('return document.getElementById("body").innerHTML')
 
-    except:
-        HTML_main = str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+    except: HTML_main = str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
 
 
     #--Close browser
