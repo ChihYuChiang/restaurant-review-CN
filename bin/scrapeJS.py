@@ -38,6 +38,10 @@ if True:
 
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
+            #Initialize
+            currentPage = 1
+            currentContent = ''
+
             #Retry several times for general errors not caught in the module
             for attempt in range(RETRY):
                 try:
@@ -48,9 +52,9 @@ if True:
                     pageValid = (item.Number // 20) + 1
 
                     #Collect html from each restaurant
-                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid))
+                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
 
-                except:
+                except Exception as e:
                     #If arrive retry cap, raise error and stop running
                     if attempt + 1 == RETRY: raise
 
@@ -59,6 +63,13 @@ if True:
                         print('{0} {1}'.format(
                             str(sys.exc_info()[0]),
                             str(sys.exc_info()[1])))
+                        
+                        #If the error coming from specific review page, update the current page and current content vars
+                        try:
+                            currentPage = e.currentPage
+                            currentContent = e.currentContent
+                        except: pass
+
                         time.sleep(random.uniform(20, 40))
                         print(r'{0} - retry {1}'.format(shopId, attempt + 1))
                         continue
@@ -74,7 +85,7 @@ if True:
 
     #Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[14415:15000], collect.mainPage) #Last: 17034 10520-10530
+    collectBySelenium(items[15490:16000], collect.reviewPage) #Last: 17034 10520-10530
 
 
 

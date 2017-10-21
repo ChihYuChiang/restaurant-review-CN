@@ -75,7 +75,7 @@ SERVICE_ARGS = [
 Browse and acquire html - restaurant review page
 ------------------------------------------------------------
 '''
-def reviewPage(shopId, outputPath, pageLimit, **kwargs):
+def reviewPage(shopId, outputPath, pageLimit, startingPage, inheritContent, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
@@ -86,20 +86,27 @@ def reviewPage(shopId, outputPath, pageLimit, **kwargs):
 
 
     #--Initialize output object
-    HTML_reviews = ''
+    HTML_reviews = inheritContent
 
 
-    #--Browse and screenshot the first `pageLimit` pages
-    for p in range(1, pageLimit + 1):
+    #--Browse and screenshot the pages
+    for p in range(startingPage, pageLimit + 1):
+        try:
+            #Targeting a url and navigate to that page
+            url = 'http://www.dianping.com/shop/{0}/review_more?pageno={1}'.format(str(shopId), p)
+            browser.get(url)
+
+            #Screenshot
+            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
+        
+        except Exception as e:
+            #Pass the current page and content to the retry loop
+            e.currentPage = p
+            e.currentContent = HTML_reviews
+            raise e
+
         #Progress marker
         print('p{}'.format(p))
-
-        #Targeting a url and navigate to that page
-        url = 'http://www.dianping.com/shop/{0}/review_more?pageno={1}'.format(str(shopId), p)
-        browser.get(url)
-
-        #Screenshot
-        HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
 
         #Delay between each page
         time.sleep(random.uniform(3, 7))
