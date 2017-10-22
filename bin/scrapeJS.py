@@ -7,11 +7,6 @@ import random
 import os
 import sys
 
-#Const
-OUTPUT_PATH = '../data/'
-RETRY = 5 #How many times to retry when error in module
-PAGE_LIMIT = 5 #How many review pages per restaurant to save
-
 #Establish necessary folder structure
 paths = [
     '{}raw/main/'.format(OUTPUT_PATH),
@@ -20,6 +15,23 @@ paths = [
 ]
 for p in paths:
     if not os.path.exists(p): os.makedirs(p)
+
+#Const
+OUTPUT_PATH = '../data/'
+RETRY = 5 #How many times to retry when error in module
+PAGE_LIMIT = 5 #How many review pages per restaurant to save
+REVIEW_THRESHOLD = 200 #Filter for those shops with reviews more than the threshold
+
+
+#--Source restaurent list
+#Read in the list acquired from the url crawling
+df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
+    
+#Strip url for shopIds
+df_source = df_source.assign(shopId=[url.strip('http://www.dianping.com/shop/') for url in df_source.url])
+
+#Filter by needs
+items = df_source.query('Number >= {}'.format(REVIEW_THRESHOLD))
 
 
 
@@ -31,17 +43,7 @@ Collect HTML by Selenium
 '''
 #Section switch
 if True:
-
-    #Source
-    df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
     
-    #Strip url for shopIds
-    df_source = df_source.assign(shopId=[url.strip('http://www.dianping.com/shop/') for url in df_source.url])
-    
-    #Filter by needs
-    items = df_source.query('Number >= 100')
-
-
     #--Function to perform collection
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
@@ -90,7 +92,7 @@ if True:
 
     #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[15490:16000], collect.reviewPage)
+    collectBySelenium(items[1:1000], collect.reviewPage) #12200
 
 
 
