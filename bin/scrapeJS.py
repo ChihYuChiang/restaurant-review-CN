@@ -32,10 +32,11 @@ Collect HTML by Selenium
 #Section switch
 if True:
 
-    #Source and strip url for shopIds
+    #Source
     df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
     
-    assign(shopId=)
+    #Strip url for shopIds
+    df_source = df_source.assign(shopId=[url.strip('http://www.dianping.com/shop/') for url in df_source.url])
     
     #Filter by needs
     items = df_source.query('Number >= 100')
@@ -51,14 +52,11 @@ if True:
             #Retry several times for general errors not caught in the module
             for attempt in range(RETRY):
                 try:
-                    #Progress marker
-                    shopId = item.url.strip('http://www.dianping.com/shop/')
-
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
 
                     #Collect html from each restaurant
-                    collect(shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
+                    collect(item.shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
 
                 except Exception as e:
                     #If arrive retry cap, raise error and stop running
@@ -77,14 +75,14 @@ if True:
                         except: pass
 
                         time.sleep(random.uniform(20, 40))
-                        print(r'{0} - retry {1}'.format(shopId, attempt + 1))
+                        print(r'{0} - retry {1}'.format(item.shopId, attempt + 1))
                         continue
                 
                 #If no exception occurs (successful), break from attempt
                 break
 
             #Progress marker
-            print(r'{} - done!'.format(shopId))
+            print(r'{} - done!'.format(item.shopId))
 
             #Set a random timeout between each successful request
             time.sleep(random.uniform(3, 7))
@@ -92,11 +90,7 @@ if True:
 
     #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-<<<<<<< Updated upstream
-    collectBySelenium(items[15490:16000], collect.reviewPage) #Last: 17034 10520-10530
-=======
-    collectBySelenium(items[15560:16000], collect.mainPage)
->>>>>>> Stashed changes
+    collectBySelenium(items[15490:16000], collect.reviewPage)
 
 
 
@@ -108,6 +102,7 @@ if True:
 '''
 ------------------------------------------------------------
 Collect HTML by Scrapy
+(to compensate what the Selenium missed)
 ------------------------------------------------------------
 '''
 #Run in terminal:
@@ -127,14 +122,13 @@ Check and identify missing and bad items
 ------------------------------------------------------------
 '''
 def checkResult(targetList, targetPath):
-    for item in items:
+    target_missing = set(items.shopId) - set([fileName.strip('.html') for fileName in os.listdir('../data/raw/main/')])
+    
+    target_bad = set([fileName.strip('.html') for fileName in os.listdir('../data/raw/main/') if os.path.getsize('../data/raw/main/' + fileName) < 10000])
 
+    return list(target_missing | target_bad)
 
-    items_missing = []
-    items_bad = 
-    os.listdir('../data/raw/main/')
-
-
+shopIds_redo = checkResult()
 
 
 
