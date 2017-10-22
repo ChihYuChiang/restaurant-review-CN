@@ -1,15 +1,10 @@
 from urllib import request
-import os
-import re
 from bs4 import BeautifulSoup
-import csv
 import numpy as np
 import pandas as pd
 import time
 import random
-
 import os
-import sys
 
 zone_list = list(pd.read_csv(r'..\data\raw\url\dianping_zone.csv', sep=',', header=None)[0])
 
