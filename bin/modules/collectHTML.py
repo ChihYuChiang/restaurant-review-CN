@@ -44,7 +44,7 @@ def setupDcaps():
     #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
     dcaps['phantomjs.page.customHeaders.User-Agent'] = userAgentCandidates[i]
     dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
-    dcaps['phantomjs.page.customHeaders.Cookie'] = 'PHOENIX_ID=0a010725-15e38404ab2-e498b4e; _hc.v=c9678f60-ffb1-70f3-6cc2-ca97c011b225.1492122470; __mta=43235098.1504182293440.1504182293440.1504182293440.1; _lxsdk=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;_lxsdk_cuid=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;aburl=1; cy=2; cye=beijing; s_ViewType=10'
+    dcaps['phantomjs.page.customHeaders.Cookie'] = 'PHOENIX_ID=0a010725-15e38404ab2-e498b4e; _hc.v=c9678f60-ffb1-70f3-6cc2-ca97c011b225.1492122470; __mta=43235098.1504182293440.1504182293440.1506927949288.2; _lxsdk=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;_lxsdk_cuid=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;aburl=1; cy=2; cye=beijing; s_ViewType=10'
 
     return dcaps
 

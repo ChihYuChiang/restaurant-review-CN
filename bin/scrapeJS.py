@@ -32,10 +32,16 @@ Collect HTML by Selenium
 #Section switch
 if True:
 
-    #Source
+    #Source and strip url for shopIds
     df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
+    
+    assign(shopId=)
+    
+    #Filter by needs
     items = df_source.query('Number >= 100')
 
+
+    #--Function to perform collection
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
             #Initialize
@@ -83,9 +89,14 @@ if True:
             #Set a random timeout between each successful request
             time.sleep(random.uniform(3, 7))
 
-    #Perform collection by setting proper callback
+
+    #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
+<<<<<<< Updated upstream
     collectBySelenium(items[15490:16000], collect.reviewPage) #Last: 17034 10520-10530
+=======
+    collectBySelenium(items[15560:16000], collect.mainPage)
+>>>>>>> Stashed changes
 
 
 
@@ -102,6 +113,26 @@ Collect HTML by Scrapy
 #Run in terminal:
 #cd scrapy
 #scrapy crawl main
+
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Check and identify missing and bad items
+------------------------------------------------------------
+'''
+def checkResult(targetList, targetPath):
+    for item in items:
+
+
+    items_missing = []
+    items_bad = 
+    os.listdir('../data/raw/main/')
 
 
 
