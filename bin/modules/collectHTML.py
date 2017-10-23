@@ -99,11 +99,19 @@ def reviewPage(shopId, outputPath, pageLimit, startingPage, inheritContent, **kw
             #Screenshot
             HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
         
-        except Exception as e:
-            #Pass the current page and content to the retry loop
-            e.currentPage = p
-            e.currentContent = HTML_reviews
-            raise e
+        except:
+            #Deal with "商户不存在" error, the internal error of the website
+            try:
+                HTML_reviews = browser.execute_script('return document.getElementsByClassName("errorMessage")[0].innerHTML')
+
+                #Break the loop for the pages and save the error message in the html
+                break
+
+            except Exception as e:
+                #Pass the current page and content to the retry loop
+                e.currentPage = p
+                e.currentContent = HTML_reviews
+                raise e
 
         #Progress marker
         print('p{}'.format(p))

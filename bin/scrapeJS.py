@@ -7,6 +7,12 @@ import random
 import os
 import sys
 
+#Const
+OUTPUT_PATH = '../data/'
+RETRY = 5 #How many times to retry when error in module
+PAGE_LIMIT = 5 #How many review pages per restaurant to save
+REVIEW_THRESHOLD = 200 #Filter for those shops with reviews more than the threshold
+
 #Establish necessary folder structure
 paths = [
     '{}raw/main/'.format(OUTPUT_PATH),
@@ -15,12 +21,6 @@ paths = [
 ]
 for p in paths:
     if not os.path.exists(p): os.makedirs(p)
-
-#Const
-OUTPUT_PATH = '../data/'
-RETRY = 5 #How many times to retry when error in module
-PAGE_LIMIT = 5 #How many review pages per restaurant to save
-REVIEW_THRESHOLD = 200 #Filter for those shops with reviews more than the threshold
 
 
 #--Source restaurent list
@@ -43,7 +43,7 @@ Collect HTML by Selenium
 '''
 #Section switch
 if True:
-    
+
     #--Function to perform collection
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
@@ -92,7 +92,7 @@ if True:
 
     #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[1:1000], collect.reviewPage) #12200
+    collectBySelenium(items[200:1200], collect.reviewPage) #12200
 
 
 
