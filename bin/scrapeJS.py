@@ -1,5 +1,6 @@
 from modules import collectHTML as collect
 from modules import extractHTML as extract
+from modules import utils
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -24,14 +25,11 @@ for p in paths:
 
 
 #--Source restaurent list
-#Read in the list acquired from the url crawling
-df_source = pd.read_csv(OUTPUT_PATH + 'raw/url/dianping_lis.csv')
-    
-#Strip url for shopIds
-df_source = df_source.assign(shopId=[url.strip('http://www.dianping.com/shop/') for url in df_source.url])
+items = utils.sourceItem(REVIEW_THRESHOLD)
 
-#Filter by needs
-items = df_source.query('Number >= {}'.format(REVIEW_THRESHOLD))
+
+
+
 
 
 
@@ -123,14 +121,9 @@ Collect HTML by Scrapy
 Check and identify missing and bad items
 ------------------------------------------------------------
 '''
-def checkResult(targetList, targetPath):
-    target_missing = set(items.shopId) - set([fileName.strip('.html') for fileName in os.listdir('../data/raw/main/')])
-    
-    target_bad = set([fileName.strip('.html') for fileName in os.listdir('../data/raw/main/') if os.path.getsize('../data/raw/main/' + fileName) < 10000])
+shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
 
-    return list(target_missing | target_bad)
 
-shopIds_redo = checkResult()
 
 
 

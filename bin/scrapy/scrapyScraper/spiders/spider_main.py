@@ -1,9 +1,11 @@
 import scrapy
 import pandas as pd
-
+from modules import utils
 
 class ReviewSpider(scrapy.Spider):
     name = "main"
+    items = utils.sourceItem(REVIEW_THRESHOLD)
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
 
     def start_requests(self):
         urls = [
