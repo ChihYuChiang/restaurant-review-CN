@@ -15,7 +15,7 @@ import os
 Extract info from HTML - restaurant main page
 ------------------------------------------------------------
 '''
-def mainPage(soup, filename, OUTPUT_PATH):
+def mainPage(soup, filename, outputPath):
     #Shop name
     try: shopName = re.sub('\n\n.*', '', soup.h1.get_text()).strip('\n ')
     except: shopName = None
@@ -110,7 +110,7 @@ def mainPage(soup, filename, OUTPUT_PATH):
         })
 
         #Use df method to Write into file
-        OUTPUT_FILE = OUTPUT_PATH + 'df_main.csv'
+        OUTPUT_FILE = outputPath + 'df_main.csv'
         entry_main.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
     except: pass
 
@@ -126,7 +126,7 @@ def mainPage(soup, filename, OUTPUT_PATH):
 Extract info from HTML - restaurant main page's extra info
 ------------------------------------------------------------
 '''
-def extraInfo(soup_score, soup_dish, shopId, OUTPUT_PATH):
+def extraInfo(soup_score, soup_dish, shopId, outputPath):
     #5 4 3 2 1 stars
     try: star = re.findall('\d+', soup_score.find(class_='stars').get_text())
     except: star = None
@@ -166,6 +166,6 @@ def extraInfo(soup_score, soup_dish, shopId, OUTPUT_PATH):
         })
 
         #Use df method to write into file
-        OUTPUT_FILE = OUTPUT_PATH + 'df_extraInfo.csv'
+        OUTPUT_FILE = outputPath + 'df_extraInfo.csv'
         entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
     except: pass

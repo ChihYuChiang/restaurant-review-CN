@@ -30,7 +30,7 @@ Collect HTML by Selenium
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
 
     #--Function to perform collection
     def collectBySelenium(items, collect):
@@ -111,8 +111,12 @@ Collect HTML by Scrapy
 Check and identify missing and bad items
 ------------------------------------------------------------
 '''
-shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
-len(shopIds_problematic)
+#Section switch
+if False:
+
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
+
+    len(shopIds_problematic)
 
 
 
@@ -127,17 +131,19 @@ Extract HTML
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
 
     #--Main page
     #Make all html files as soups in a soup cauldron
     soupCauldron = []
     def makeSoups(fldr):
-        for filename in os.listdir(fldr):
+        #Filter out extra info df files
+        filteredFilenames = (filename for filename in os.listdir(fldr) if filename[0:2] != 'df')
+        for filename in filteredFilenames:
             with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
                 soup = BeautifulSoup(content.read(), 'html5lib')
             yield (soup, filename)
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/')
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/main/')
 
     #Extract each soup and write into a df (in the module)
     for soup, filename in soupCauldron:    
@@ -146,13 +152,15 @@ if False:
 
 
     #--Extra shop info in main page
-    #Read the corresponding df
-    df_extraInfo_HTML = pd.read_csv(settings.OUTPUT_PATH + 'df_extraInfo_HTML.csv')
+    #Read the corresponding dfs
+    fldr = settings.OUTPUT_PATH + 'raw/main/'
+    dfs_extraInfo_HTML = (pd.read_csv(fldr + filename) for filename in os.listdir(fldr) if filename[0:2] == 'df')
 
     #Extract each row and write into a new df (in the module)
-    for index, row in df_extraInfo_HTML.iterrows():
-        #Make html text into soups
-        soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
-        soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
-        
-        extract.extraInfo(soup_score, soup_dish, row['shopId'], settings.OUTPUT_PATH)
+    for df in dfs_extraInfo_HTML:
+        for index, row in df.iterrows():
+            #Make html text into soups
+            soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
+            soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
+            
+            extract.extraInfo(soup_score, soup_dish, row['shopId'], settings.OUTPUT_PATH)
