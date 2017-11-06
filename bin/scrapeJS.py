@@ -112,6 +112,7 @@ Check and identify missing and bad items
 ------------------------------------------------------------
 '''
 shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
+len(shopIds_problematic)
 
 
 

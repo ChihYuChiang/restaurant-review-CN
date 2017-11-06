@@ -13,6 +13,7 @@ class ReviewSpider(scrapy.Spider):
     name = "main"
     items = c_utils.sourceItem(binPath + '/' + c_settings.OUTPUT_PATH, c_settings.REVIEW_THRESHOLD)
     shopIds_problematic = c_utils.problematicResult(targetList=items.shopId, targetPath=os.path.split(binPath)[0] + '/data/raw/main/')
+    self.log('Number of target files = ' + len(shopIds_problematic))
 
 
     def start_requests(self):
