@@ -1,6 +1,7 @@
 from modules import collectHTML as collect
 from modules import extractHTML as extract
 from modules import utils
+from modules import settings
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -8,24 +9,13 @@ import random
 import os
 import sys
 
-#Const
-OUTPUT_PATH = '../data/'
-RETRY = 5 #How many times to retry when error in module
-PAGE_LIMIT = 5 #How many review pages per restaurant to save
-REVIEW_THRESHOLD = 200 #Filter for those shops with reviews more than the threshold
 
-#Establish necessary folder structure
-paths = [
-    '{}raw/main/'.format(OUTPUT_PATH),
-    '{}raw/review/'.format(OUTPUT_PATH),
-    '{}raw/url/'.format(OUTPUT_PATH)
-]
-for p in paths:
-    if not os.path.exists(p): os.makedirs(p)
+#--Establish necessary folder structure
+utils.createFolders(settings.OUTPUT_PATH)
 
 
 #--Source restaurent list
-items = utils.sourceItem(REVIEW_THRESHOLD)
+items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD)
 
 
 
@@ -50,17 +40,17 @@ if True:
             currentContent = ''
 
             #Retry several times for general errors not caught in the module
-            for attempt in range(RETRY):
+            for attempt in range(settings.RETRY):
                 try:
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
 
                     #Collect html from each restaurant
-                    collect(item.shopId, OUTPUT_PATH, pageLimit=min(PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
+                    collect(item.shopId, settings.OUTPUT_PATH, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
 
                 except Exception as e:
                     #If arrive retry cap, raise error and stop running
-                    if attempt + 1 == RETRY: raise
+                    if attempt + 1 == settings.RETRY: raise
 
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
@@ -146,17 +136,17 @@ if False:
             with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
                 soup = BeautifulSoup(content.read(), 'html5lib')
             yield (soup, filename)
-    soupCauldron = makeSoups(OUTPUT_PATH + 'raw/')
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/')
 
     #Extract each soup and write into a df (in the module)
     for soup, filename in soupCauldron:    
         print(filename)
-        extract.mainPage(soup, filename, OUTPUT_PATH)
+        extract.mainPage(soup, filename, settings.OUTPUT_PATH)
 
 
     #--Extra shop info in main page
     #Read the corresponding df
-    df_extraInfo_HTML = pd.read_csv(OUTPUT_PATH + 'df_extraInfo_HTML.csv')
+    df_extraInfo_HTML = pd.read_csv(settings.OUTPUT_PATH + 'df_extraInfo_HTML.csv')
 
     #Extract each row and write into a new df (in the module)
     for index, row in df_extraInfo_HTML.iterrows():
@@ -164,4 +154,4 @@ if False:
         soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
         soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
         
-        extract.extraInfo(soup_score, soup_dish, row['shopId'], OUTPUT_PATH)
+        extract.extraInfo(soup_score, soup_dish, row['shopId'], settings.OUTPUT_PATH)
