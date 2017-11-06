@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'scrapyScraper.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -41,8 +41,7 @@ COOKIES_ENABLED = False
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
   'Accept': 'application/json, text/javascript',
-#Following cookie is for DianPing
-#   'Cookie': 'PHOENIX_ID=0a010725-15e38404ab2-e498b4e; _hc.v=c9678f60-ffb1-70f3-6cc2-ca97c011b225.1492122470; __mta=43235098.1504182293440.1504182293440.1504182293440.1; _lxsdk=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;_lxsdk_cuid=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;aburl=1; cy=2; cye=beijing; s_ViewType=10'
+  'Cookie': 'PHOENIX_ID=0a010725-15e38404ab2-e498b4e; _hc.v=c9678f60-ffb1-70f3-6cc2-ca97c011b225.1492122470; __mta=43235098.1504182293440.1504182293440.1504182293440.1; _lxsdk=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;_lxsdk_cuid=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;aburl=1; cy=2; cye=beijing; s_ViewType=10'
 }
 
 # Enable or disable spider middlewares
