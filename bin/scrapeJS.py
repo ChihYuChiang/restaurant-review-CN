@@ -80,7 +80,7 @@ if False:
 
     #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[200:1200], collect.reviewPage) #12200
+    collectBySelenium(items_problematic, collect.reviewPage)
 
 
 
@@ -114,9 +114,12 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/main/')
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/review/')
 
     len(shopIds_problematic)
+
+    #Filter the items with the problematic ids
+    items_problematic = items[items.shopId.isin(shopIds_problematic)]
 
 
 
