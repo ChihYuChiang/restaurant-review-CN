@@ -166,7 +166,11 @@ if False:
     for df in dfs_extraInfo_HTML:
         for index, row in df.iterrows():
             #Make html text into soups
-            soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
-            soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
-            
+            #Dealing with multiple columns
+            try:
+                soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
+            except: soup_score = None
+            try:
+                soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
+            except: soup_dish = None
             extract.extraInfo(soup_score, soup_dish, row['shopId'], settings.OUTPUT_PATH)
