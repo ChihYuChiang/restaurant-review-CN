@@ -145,13 +145,13 @@ if True:
             with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
                 soup = BeautifulSoup(content.read(), 'html5lib')
             yield (soup, filename)
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review/')
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/main/')
 
     #Extract each soup and write into a df (in the module)
     #extract.mainPage / extract.review
     for soup, filename in soupCauldron:    
         print(filename)
-        extract.review(soup, filename, settings.OUTPUT_PATH)
+        extract.mainPage(soup, filename, settings.OUTPUT_PATH)
 
 
 #Section switch

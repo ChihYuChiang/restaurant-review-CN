@@ -1,6 +1,8 @@
+from modules import settings
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+import time
 import os
 
 
@@ -88,31 +90,41 @@ def mainPage(soup, filename, outputPath):
 
 
     #--Output extracted info
-    try:
-        entry_main = pd.DataFrame({
-            'shopID'       : [filename.strip('.html')],
-            'shopName'     : [shopName],
-            'shopCat'      : [shopCat],
-            'branchNum'    : [branchNum],
-            'reviewNum'    : [reviewNum],
-            'avgConsume'   : [avgConsume],
-            'address'      : [address],
-            'tel'          : [tel],
-            'tag_tuan'     : [tag_tuan],
-            'tag_ding'     : [tag_ding],
-            'tag_wai'      : [tag_wai],
-            'tag_cu'       : [tag_cu],
-            'extraInfo'    : [extraInfo],
-            'good_tags'    : [good_tags],
-            'good_nos'     : [good_nos],
-            'bad_tags'     : [bad_tags],
-            'bad_nos'      : [bad_nos]
-        })
+    #Retry several times to avoid access permission error
+    for attempt in range(settings.RETRY):
+        try:
+            entry_main = pd.DataFrame({
+                'shopID'       : [filename.strip('.html')],
+                'shopName'     : [shopName],
+                'shopCat'      : [shopCat],
+                'branchNum'    : [branchNum],
+                'reviewNum'    : [reviewNum],
+                'avgConsume'   : [avgConsume],
+                'address'      : [address],
+                'tel'          : [tel],
+                'tag_tuan'     : [tag_tuan],
+                'tag_ding'     : [tag_ding],
+                'tag_wai'      : [tag_wai],
+                'tag_cu'       : [tag_cu],
+                'extraInfo'    : [extraInfo],
+                'good_tags'    : [', '.join(good_tags)],
+                'good_nos'     : [', '.join(good_nos)],
+                'bad_tags'     : [', '.join(bad_tags)],
+                'bad_nos'      : [', '.join(bad_nos)]
+            })
 
-        #Use df method to Write into file
-        OUTPUT_FILE = outputPath + 'df_main.csv'
-        entry_main.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
-    except: pass
+            #Use df method to Write into file
+            OUTPUT_FILE = outputPath + 'df_main.csv'
+            entry_main.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+        
+        #Retry several times, if no avail, skip this entry
+        except:
+            time.sleep(attempt + 1)
+            if attempt + 1 < settings.RETRY: continue
+            else: break
+
+        #If no exception occurs (successful), break from attempt
+        break
 
 
 
@@ -150,32 +162,42 @@ def extraInfo(soup_score, soup_dish, shopId, outputPath):
 
 
     #--Output extracted info
-    try:
-        entry_extraInfo = pd.DataFrame({
-            'shopID'       : [shopId],
-            'star_5'       : [star[0]],
-            'star_4'       : [star[1]],
-            'star_3'       : [star[2]],
-            'star_2'       : [star[3]],
-            'star_1'       : [star[4]],
-            'score_taste'  : [score[0]],
-            'score_environ': [score[1]],
-            'score_service': [score[2]],
-            'dish_names'   : [dish_names],
-            'dish_nos'     : [dish_nos]
-        })
+    #Retry several times to avoid access permission error
+    for attempt in range(settings.RETRY):
+        try:
+            entry_extraInfo = pd.DataFrame({
+                'shopID'       : [shopId],
+                'star_5'       : [star[0]],
+                'star_4'       : [star[1]],
+                'star_3'       : [star[2]],
+                'star_2'       : [star[3]],
+                'star_1'       : [star[4]],
+                'score_taste'  : [score[0]],
+                'score_environ': [score[1]],
+                'score_service': [score[2]],
+                'dish_names'   : [dish_names],
+                'dish_nos'     : [dish_nos]
+            })
 
-        #Use df method to write into file
-        OUTPUT_FILE = outputPath + 'df_extraInfo.csv'
-        entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
-    except: pass
+            #Use df method to write into file
+            OUTPUT_FILE = outputPath + 'df_extraInfo.csv'
+            entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+        
+        #Retry several times, if no avail, skip this entry
+        except:
+            time.sleep(attempt + 1)
+            if attempt + 1 < settings.RETRY: continue
+            else: break
+
+        #If no exception occurs (successful), break from attempt
+        break
 
 
 
 
 
-filename = "8067900.html"
-len([0, 0, 0])
+
+
 
 '''
 ------------------------------------------------------------
@@ -315,5 +337,17 @@ def review(soup, filename, outputPath):
 
 
     #--Use df method to Write into file
-    OUTPUT_FILE = outputPath + 'df_review.csv'
-    entry_review.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+    #Retry several times to avoid access permission error
+    for attempt in range(settings.RETRY):
+        try:
+            OUTPUT_FILE = outputPath + 'df_review.csv'
+            entry_review.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
+        
+        #Retry several times, if no avail, skip this entry
+        except:
+            time.sleep(attempt + 1)
+            if attempt + 1 < settings.RETRY: continue
+            else: break
+
+        #If no exception occurs (successful), break from attempt
+        break
