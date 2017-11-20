@@ -120,8 +120,7 @@ def mainPage(soup, filename, outputPath):
         #Retry several times, if no avail, skip this entry
         except:
             time.sleep(attempt + 1)
-            if attempt + 1 < settings.RETRY: continue
-            else: break
+            continue
 
         #If no exception occurs (successful), break from attempt
         break
@@ -186,8 +185,7 @@ def extraInfo(soup_score, soup_dish, shopId, outputPath):
         #Retry several times, if no avail, skip this entry
         except:
             time.sleep(attempt + 1)
-            if attempt + 1 < settings.RETRY: continue
-            else: break
+            continue
 
         #If no exception occurs (successful), break from attempt
         break
@@ -346,8 +344,7 @@ def review(soup, filename, outputPath):
         #Retry several times, if no avail, skip this entry
         except:
             time.sleep(attempt + 1)
-            if attempt + 1 < settings.RETRY: continue
-            else: break
+            continue
 
         #If no exception occurs (successful), break from attempt
         break
