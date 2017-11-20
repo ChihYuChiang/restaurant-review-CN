@@ -134,7 +134,7 @@ Extract HTML
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
 
     #--Main page or review
     #Make all html files as soups in a soup cauldron
@@ -155,12 +155,15 @@ if True:
 
 
 #Section switch
-if False:
+if True:
 
     #--Extra shop info in main page
     #Read the corresponding dfs
     fldr = settings.OUTPUT_PATH + 'raw/main/'
     dfs_extraInfo_HTML = (pd.read_csv(fldr + filename) for filename in os.listdir(fldr) if filename[0:2] == 'df')
+
+    #A vessel for a united df so we write to the file only once
+    df_extraInfo = pd.DataFrame()
 
     #Extract each row and write into a new df (in the module)
     for df in dfs_extraInfo_HTML:
@@ -173,4 +176,12 @@ if False:
             try:
                 soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
             except: soup_dish = None
-            extract.extraInfo(soup_score, soup_dish, row['shopId'], settings.OUTPUT_PATH)
+            
+            #Append the extracted info to the united df
+            df_extraInfo.append(extract.extraInfo(soup_score, soup_dish, row['shopId']), ignore_index=True)
+        
+        #Progress marker
+        print('Raw file extraction done.')
+
+    #Output to a file
+    df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo.csv', index=False, encoding='utf-8')

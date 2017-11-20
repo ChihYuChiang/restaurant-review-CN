@@ -73,6 +73,9 @@ def mainPage(soup, filename, outputPath):
             tagNo = re.search('^(.+)\((\d+)\)$', chunk.get_text())
             good_tags.append(tagNo.group(1))
             good_nos.append(tagNo.group(2))
+        #Make as strs for saving 
+        good_tags = ', '.join(good_tags)
+        good_nos = ', '.join(good_nos)
     except:
         good_tags = None
         good_nos = None
@@ -84,6 +87,9 @@ def mainPage(soup, filename, outputPath):
             tagNo = re.search('^(.+)\((\d+)\)$', chunk.get_text())
             bad_tags.append(tagNo.group(1))
             bad_nos.append(tagNo.group(2))
+        #Make as strs for saving
+        bad_tags = ', '.join(bad_tags)
+        bad_nos = ', '.join(bad_nos)
     except:
         bad_tags = None
         bad_nos = None
@@ -107,10 +113,10 @@ def mainPage(soup, filename, outputPath):
                 'tag_wai'      : [tag_wai],
                 'tag_cu'       : [tag_cu],
                 'extraInfo'    : [extraInfo],
-                'good_tags'    : [', '.join(good_tags)],
-                'good_nos'     : [', '.join(good_nos)],
-                'bad_tags'     : [', '.join(bad_tags)],
-                'bad_nos'      : [', '.join(bad_nos)]
+                'good_tags'    : [good_tags],
+                'good_nos'     : [good_nos],
+                'bad_tags'     : [bad_tags],
+                'bad_nos'      : [bad_nos]
             })
 
             #Use df method to Write into file
@@ -119,7 +125,7 @@ def mainPage(soup, filename, outputPath):
         
         #Retry several times, if no avail, skip this entry
         except:
-            time.sleep(attempt + 1)
+            time.sleep((attempt + 1) * 2)
             continue
 
         #If no exception occurs (successful), break from attempt
@@ -137,14 +143,14 @@ def mainPage(soup, filename, outputPath):
 Extract info from HTML - restaurant main page's extra info
 ------------------------------------------------------------
 '''
-def extraInfo(soup_score, soup_dish, shopId, outputPath):
+def extraInfo(soup_score, soup_dish, shopId):
     #5 4 3 2 1 stars
     try: star = re.findall('\d+', soup_score.find(class_='stars').get_text())
-    except: star = None
+    except: star = [None] * 5
 
     #口味 環境 服務
     try: score = re.findall('\d+\.\d+', soup_score.find(class_='scores').get_text())
-    except: score = None
+    except: score = [None] * 3
 
     #Recommended dishes
     try:
@@ -155,6 +161,9 @@ def extraInfo(soup_score, soup_dish, shopId, outputPath):
         for dish in dishes:
             dish_names.append(dish['title'])
             dish_nos.append(dish.em.get_text().strip('()'))
+        #Make as strs for saving
+        dish_names = ', '.join(dish_names)
+        dish_nos = ', '.join(dish_nos)
     except:
         dish_names = None
         dish_nos = None
@@ -163,32 +172,23 @@ def extraInfo(soup_score, soup_dish, shopId, outputPath):
     #--Output extracted info
     #Retry several times to avoid access permission error
     for attempt in range(settings.RETRY):
-        try:
-            entry_extraInfo = pd.DataFrame({
-                'shopID'       : [shopId],
-                'star_5'       : [star[0]],
-                'star_4'       : [star[1]],
-                'star_3'       : [star[2]],
-                'star_2'       : [star[3]],
-                'star_1'       : [star[4]],
-                'score_taste'  : [score[0]],
-                'score_environ': [score[1]],
-                'score_service': [score[2]],
-                'dish_names'   : [dish_names],
-                'dish_nos'     : [dish_nos]
-            })
+        entry_extraInfo = pd.DataFrame({
+            'shopID'       : [shopId],
+            'star_5'       : [star[0]],
+            'star_4'       : [star[1]],
+            'star_3'       : [star[2]],
+            'star_2'       : [star[3]],
+            'star_1'       : [star[4]],
+            'score_taste'  : [score[0]],
+            'score_environ': [score[1]],
+            'score_service': [score[2]],
+            'dish_names'   : [dish_names],
+            'dish_nos'     : [dish_nos]
+        })
 
-            #Use df method to write into file
-            OUTPUT_FILE = outputPath + 'df_extraInfo.csv'
-            entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
-        
-        #Retry several times, if no avail, skip this entry
-        except:
-            time.sleep(attempt + 1)
-            continue
-
-        #If no exception occurs (successful), break from attempt
-        break
+        #Return single entry
+        #We'll write into file only after gather all info from the raw data for computational efficiency
+        return entry_extraInfo
 
 
 
@@ -206,7 +206,7 @@ def review(soup, filename, outputPath):
     #--Get review chunks as a list
     try:
         chunks = soup.findAll('li', attrs = {'data-id': True})
-    except: pass
+    except: return
 
 
     #--Empty vessels
@@ -343,7 +343,7 @@ def review(soup, filename, outputPath):
         
         #Retry several times, if no avail, skip this entry
         except:
-            time.sleep(attempt + 1)
+            time.sleep((attempt + 1) * 2)
             continue
 
         #If no exception occurs (successful), break from attempt
