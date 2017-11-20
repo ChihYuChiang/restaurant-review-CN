@@ -273,9 +273,9 @@ def review(soup, filename, outputPath):
     for chunk in chunks:
         try:
             review_content = chunk.find('div', attrs = {'class':'content'}) 
-            review_text = review_content.find('div', attrs = {'class' : 'J_brief-cont'}).getText()
+            review_text = review_content.find('div', attrs = {'class' : 'J_brief-cont'}).getText().strip()
         except: review_text = None
-        review_texts.append(review_text.strip())
+        review_texts.append(review_text)
 
     #Recommended dishes
     for chunk in chunks:
@@ -286,8 +286,9 @@ def review(soup, filename, outputPath):
             for recommendation_chunk in recommendation_chunks:
                 recommendation = recommendation_chunk.getText()
                 recommendations_1.append(recommendation)
-        except: recommendation_1 = None
-        recommendations.append(', '.join(recommendations_1))
+            recommendations_1 = ', '.join(recommendations_1)
+        except: recommendations_1 = None
+        recommendations.append(recommendations_1)
 
     #Praise and comment number (to this review)
     for chunk in chunks:
@@ -321,17 +322,6 @@ def review(soup, filename, outputPath):
     })
 
 
-    #--Use df method to Write into file
-    #Retry several times to avoid access permission error
-    for attempt in range(settings.RETRY):
-        try:
-            OUTPUT_FILE = outputPath + 'df_review.csv'
-            entry_review.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
-        
-        #Retry several times, if no avail, skip this entry
-        except:
-            time.sleep((attempt + 1) * 2)
-            continue
-
-        #If no exception occurs (successful), break from attempt
-        break
+    #Return single entry
+    #We'll write into file only after gather all info from the raw data for computational efficiency
+    return entry_review

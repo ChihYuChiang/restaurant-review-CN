@@ -130,13 +130,12 @@ if False:
 
 '''
 ------------------------------------------------------------
-Extract HTML
+Extract HTML -- Main and review
 ------------------------------------------------------------
 '''
 #Section switch
 if True:
 
-    #--Main page or review
     #Make all html files as soups in a soup cauldron
     def makeSoups(fldr):
         #Filter out extra info df files
@@ -145,24 +144,42 @@ if True:
             with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
                 soup = BeautifulSoup(content.read(), 'html5lib')
             yield (soup, filename)
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/main/')
 
     #Extract each soup and write into a df (in the module)
-    #extract.mainPage / extract.review
-    def genEntries(soupCauldron):
+    def genEntries(soupCauldron, ext):
         for soup, filename in soupCauldron:    
-            yield extract.mainPage(soup, filename, settings.OUTPUT_PATH)
+            yield ext(soup, filename, settings.OUTPUT_PATH)
 
             #Progress marker
             print(filename)
 
+    #Acquire the cauldron
+    #'raw/main/' or 'raw/review/'
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review2/')
+
     #Concat the extracted info to a united df
-    df_main = pd.concat(genEntries(soupCauldron), ignore_index=True).drop_duplicates(subset='shopID')
+    #ext = extract.mainPage or extract.review
+    #.drop_duplicates(subset='shopID') if needed
+    df = pd.concat(genEntries(soupCauldron, ext=extract.review), ignore_index=True)
 
     #Output to a file
-    df_main.to_csv(settings.OUTPUT_PATH + 'df_main.csv', index=False, encoding='utf-8')
+    #Support batch extraction
+    #'df_main.csv' or 'df_review.csv'
+    fullOutputPath = settings.OUTPUT_PATH + 'df_review.csv'
+    df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
 
 
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Extract HTML -- Extra info
+------------------------------------------------------------
+'''
 #Section switch
 if False:
 
