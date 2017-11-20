@@ -45,14 +45,14 @@ def mainPage(soup, filename, outputPath):
     #Tel Number
     try: tel = soup.find(class_='expand-info tel').find(itemprop='tel').get_text()
     except: tel = None
-
+    
     #Special tags (團、訂、外、促)
     try:
         specialTags = str(soup.find(class_='promosearch-wrapper'))
-        tag_tuan = 'tag-tuan' in specialTags
-        tag_ding = 'tag-ding' in specialTags
-        tag_wai = 'tag-wai' in specialTags
-        tag_cu = 'tag-cu' in specialTags
+        tag_tuan = int('tag-tuan' in specialTags)
+        tag_ding = int('tag-ding' in specialTags)
+        tag_wai = int('tag-wai' in specialTags)
+        tag_cu = int('tag-cu' in specialTags)
     except:
         tag_tuan = None
         tag_ding = None
@@ -61,7 +61,7 @@ def mainPage(soup, filename, outputPath):
 
     #Extra info (operation hour, simple desc, parking, alias, crowd-sourced)
     try:
-        extraInfo = soup.find(class_='other J-other').get_text().strip('\r\n')
+        extraInfo = soup.find(class_='other J-other').get_text().strip('\r\n ')
         re.sub('\n+', '\n', extraInfo)
     except: extraInfo = None
 
@@ -96,40 +96,29 @@ def mainPage(soup, filename, outputPath):
 
 
     #--Output extracted info
-    #Retry several times to avoid access permission error
-    for attempt in range(settings.RETRY):
-        try:
-            entry_main = pd.DataFrame({
-                'shopID'       : [filename.strip('.html')],
-                'shopName'     : [shopName],
-                'shopCat'      : [shopCat],
-                'branchNum'    : [branchNum],
-                'reviewNum'    : [reviewNum],
-                'avgConsume'   : [avgConsume],
-                'address'      : [address],
-                'tel'          : [tel],
-                'tag_tuan'     : [tag_tuan],
-                'tag_ding'     : [tag_ding],
-                'tag_wai'      : [tag_wai],
-                'tag_cu'       : [tag_cu],
-                'extraInfo'    : [extraInfo],
-                'good_tags'    : [good_tags],
-                'good_nos'     : [good_nos],
-                'bad_tags'     : [bad_tags],
-                'bad_nos'      : [bad_nos]
-            })
+    entry_main = pd.DataFrame({
+        'shopID'       : [filename.strip('.html')],
+        'shopName'     : [shopName],
+        'shopCat'      : [shopCat],
+        'branchNum'    : [branchNum],
+        'reviewNum'    : [reviewNum],
+        'avgConsume'   : [avgConsume],
+        'address'      : [address],
+        'tel'          : [tel],
+        'tag_tuan'     : [tag_tuan],
+        'tag_ding'     : [tag_ding],
+        'tag_wai'      : [tag_wai],
+        'tag_cu'       : [tag_cu],
+        'extraInfo'    : [extraInfo],
+        'good_tags'    : [good_tags],
+        'good_nos'     : [good_nos],
+        'bad_tags'     : [bad_tags],
+        'bad_nos'      : [bad_nos]
+    })
 
-            #Use df method to Write into file
-            OUTPUT_FILE = outputPath + 'df_main.csv'
-            entry_main.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
-        
-        #Retry several times, if no avail, skip this entry
-        except:
-            time.sleep((attempt + 1) * 2)
-            continue
-
-        #If no exception occurs (successful), break from attempt
-        break
+    #Return single entry
+    #We'll write into file only after gather all info from the raw data for computational efficiency
+    return entry_main
 
 
 
@@ -170,25 +159,23 @@ def extraInfo(soup_score, soup_dish, shopId):
 
 
     #--Output extracted info
-    #Retry several times to avoid access permission error
-    for attempt in range(settings.RETRY):
-        entry_extraInfo = pd.DataFrame({
-            'shopID'       : [shopId],
-            'star_5'       : [star[0]],
-            'star_4'       : [star[1]],
-            'star_3'       : [star[2]],
-            'star_2'       : [star[3]],
-            'star_1'       : [star[4]],
-            'score_taste'  : [score[0]],
-            'score_environ': [score[1]],
-            'score_service': [score[2]],
-            'dish_names'   : [dish_names],
-            'dish_nos'     : [dish_nos]
-        })
+    entry_extraInfo = pd.DataFrame({
+        'shopID'       : [shopId],
+        'star_5'       : [star[0]],
+        'star_4'       : [star[1]],
+        'star_3'       : [star[2]],
+        'star_2'       : [star[3]],
+        'star_1'       : [star[4]],
+        'score_taste'  : [score[0]],
+        'score_environ': [score[1]],
+        'score_service': [score[2]],
+        'dish_names'   : [dish_names],
+        'dish_nos'     : [dish_nos]
+    })
 
-        #Return single entry
-        #We'll write into file only after gather all info from the raw data for computational efficiency
-        return entry_extraInfo
+    #Return single entry
+    #We'll write into file only after gather all info from the raw data for computational efficiency
+    return entry_extraInfo
 
 
 

@@ -134,7 +134,7 @@ Extract HTML
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
 
     #--Main page or review
     #Make all html files as soups in a soup cauldron
@@ -149,13 +149,22 @@ if False:
 
     #Extract each soup and write into a df (in the module)
     #extract.mainPage / extract.review
-    for soup, filename in soupCauldron:    
-        print(filename)
-        extract.mainPage(soup, filename, settings.OUTPUT_PATH)
+    def genEntries(soupCauldron):
+        for soup, filename in soupCauldron:    
+            yield extract.mainPage(soup, filename, settings.OUTPUT_PATH)
+
+            #Progress marker
+            print(filename)
+
+    #Concat the extracted info to a united df
+    df_main = pd.concat(genEntries(soupCauldron), ignore_index=True).drop_duplicates(subset='shopID')
+
+    #Output to a file
+    df_main.to_csv(settings.OUTPUT_PATH + 'df_main.csv', index=False, encoding='utf-8')
 
 
 #Section switch
-if True:
+if False:
 
     #--Extra shop info in main page
     #Read the corresponding dfs
@@ -180,7 +189,7 @@ if True:
             #Progress marker
             print('Raw file extraction done.')
 
-    #Concat the extracted info to the united df
+    #Concat the extracted info to a united df
     df_extraInfo = pd.concat(genEntries(dfs_extraInfo_HTML), ignore_index=True).drop_duplicates(subset='shopID')
 
     #Output to a file
