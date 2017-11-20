@@ -162,26 +162,26 @@ if True:
     fldr = settings.OUTPUT_PATH + 'raw/main/'
     dfs_extraInfo_HTML = (pd.read_csv(fldr + filename) for filename in os.listdir(fldr) if filename[0:2] == 'df')
 
-    #A vessel for a united df so we write to the file only once
-    df_extraInfo = pd.DataFrame()
-
-    #Extract each row and write into a new df (in the module)
-    for df in dfs_extraInfo_HTML:
-        for index, row in df.iterrows():
-            #Make html text into soups
-            #Dealing with multiple columns
-            try:
-                soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
-            except: soup_score = None
-            try:
-                soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
-            except: soup_dish = None
+    #Extract each row and write into a new df
+    def genEntries(dfs):
+        for df in dfs:
+            for index, row in df.iterrows():
+                #Make html text into soups
+                #Dealing with multiple columns
+                try:
+                    soup_score = BeautifulSoup(row['HTML_generalScores'], 'html5lib')
+                except: soup_score = None
+                try:
+                    soup_dish = BeautifulSoup(row['HTML_recDishes'], 'html5lib')
+                except: soup_dish = None
+                
+                yield extract.extraInfo(soup_score, soup_dish, row['shopId'])
             
-            #Append the extracted info to the united df
-            df_extraInfo.append(extract.extraInfo(soup_score, soup_dish, row['shopId']), ignore_index=True)
-        
-        #Progress marker
-        print('Raw file extraction done.')
+            #Progress marker
+            print('Raw file extraction done.')
+
+    #Concat the extracted info to the united df
+    df_extraInfo = pd.concat(genEntries(dfs_extraInfo_HTML), ignore_index=True).drop_duplicates(subset='shopID')
 
     #Output to a file
     df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo.csv', index=False, encoding='utf-8')
