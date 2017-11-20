@@ -136,9 +136,8 @@ Extract HTML
 #Section switch
 if True:
 
-    #--Main page
+    #--Main page or review
     #Make all html files as soups in a soup cauldron
-    soupCauldron = []
     def makeSoups(fldr):
         #Filter out extra info df files
         filteredFilenames = (filename for filename in os.listdir(fldr) if filename[0:2] != 'df')
@@ -146,13 +145,17 @@ if True:
             with open(fldr + filename, 'r', errors='replace', encoding='utf-8') as content:
                 soup = BeautifulSoup(content.read(), 'html5lib')
             yield (soup, filename)
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/main/')
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review/')
 
     #Extract each soup and write into a df (in the module)
+    #extract.mainPage / extract.review
     for soup, filename in soupCauldron:    
         print(filename)
-        extract.mainPage(soup, filename, settings.OUTPUT_PATH)
+        extract.review(soup, filename, settings.OUTPUT_PATH)
 
+
+#Section switch
+if False:
 
     #--Extra shop info in main page
     #Read the corresponding dfs

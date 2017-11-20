@@ -169,3 +169,151 @@ def extraInfo(soup_score, soup_dish, shopId, outputPath):
         OUTPUT_FILE = outputPath + 'df_extraInfo.csv'
         entry_extraInfo.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
     except: pass
+
+
+
+
+
+filename = "8067900.html"
+len([0, 0, 0])
+
+'''
+------------------------------------------------------------
+Extract info from HTML - review
+------------------------------------------------------------
+'''
+def review(soup, filename, outputPath):
+    #--Get review chunks as a list
+    try:
+        chunks = soup.findAll('li', attrs = {'data-id': True})
+    except: pass
+
+
+    #--Empty vessels
+    shopID = [filename.strip('.html')] * len(chunks)
+    user_names = []
+    user_ids = []
+    user_contributions = []
+    review_stars = []
+    average_prices = []
+    taste_stars = []
+    environment_stars = []
+    service_stars = []
+    review_texts = []
+    recommendations = []
+    praises = []
+    comments = []
+    favorites = []
+
+
+    #--Deal with individual review trunks
+    #User name and id
+    for chunk in chunks:
+        try:
+            user_account = chunk.find('div', attrs = {'class':'pic'}) 
+            user_id = user_account.a['user-id']
+            user_name = user_account.find('p', attrs={'class':'name'}).find('a').getText()
+        except:
+            user_name = None
+            user_id = None
+        user_names.append(user_name)
+        user_ids.append(user_id)
+
+    #User contribution level
+    for chunk in chunks:
+        try: 
+            user_account = chunk.find('div', attrs = {'class':'pic'}) 
+            user_information = user_account.find('p', attrs={'class':'contribution'}).find('span')['class'][1]
+            user_contribution = re.findall("[0-9]+", user_information)[0]
+        except: user_contribution = None
+        user_contributions.append(user_contribution)
+
+    #Primary rating
+    for chunk in chunks:
+        try:
+            review_content = chunk.find('div', attrs = {'class':'content'}) 
+            review_star_code = review_content.find('div', attrs={'class':'user-info'}).find('span', attrs = {'title': True})['class'][1]
+            review_star = int(re.findall("[0-9]+", review_star_code)[0])
+        except: review_star = None
+        review_stars.append(review_star)
+
+    #Average price
+    for chunk in chunks:
+        try:
+            review_content = chunk.find('div', attrs = {'class':'content'}) 
+            average_price_code = review_content.find('div', attrs={'class':'user-info'}).find('span', attrs = {'class': 'comm-per'}).getText()
+            average_price = int(re.findall("[0-9]+", average_price_code)[0])
+        except: average_price = None
+        average_prices.append(average_price)
+
+    #Sub ratings (taste, environment, service)
+    for chunk in chunks:
+        try:
+            review_content = chunk.find('div', attrs = {'class':'content'}) 
+            star_chunks = review_content.find('div', attrs={'class':'comment-rst'}).findAll('span', attrs = {'class': 'rst'})
+            taste_star = int(star_chunks[0].getText()[2])
+            environment_star = int(star_chunks[1].getText()[2])
+            service_star = int(star_chunks[2].getText()[2])
+        except: 
+            taste_star = None
+            environment_star = None
+            service_star = None
+        taste_stars.append(taste_star)
+        environment_stars.append(environment_star)
+        service_stars.append(service_star)
+
+    #Review text
+    for chunk in chunks:
+        try:
+            review_content = chunk.find('div', attrs = {'class':'content'}) 
+            review_text = review_content.find('div', attrs = {'class' : 'J_brief-cont'}).getText()
+        except: review_text = None
+        review_texts.append(review_text.strip())
+
+    #Recommended dishes
+    for chunk in chunks:
+        recommendations_1 = []
+        try:
+            review_content = chunk.find('div', attrs = {'class':'content'}) 
+            recommendation_chunks = review_content.find('div', attrs = {'class' : 'comment-recommend'}).findAll('a', attrs = {'class' : 'col-exp'})
+            for recommendation_chunk in recommendation_chunks:
+                recommendation = recommendation_chunk.getText()
+                recommendations_1.append(recommendation)
+        except: recommendation_1 = None
+        recommendations.append(', '.join(recommendations_1))
+
+    #Praise and comment number (to this review)
+    for chunk in chunks:
+        try:
+            review_action_chunk = chunk.find('span', attrs = {'class':'col-right'})
+            praise = int(review_action_chunk.find('span', attrs = {'class':'heart-num'}).getText()[1])
+        except: praise = None
+        try:
+            review_action_chunk = chunk.find('span', attrs = {'class':'col-right'})
+            comment = int(review_action_chunk.find('span', attrs = {'class':'J_rtl'}).getText())
+        except: comment = None
+        praises.append(praise)
+        comments.append(comment)
+
+
+    #--Output extracted info
+    entry_review = pd.DataFrame({
+        'ShopID'             : shopID,
+        'User Name'          : user_names,
+        'User ID'            : user_ids,
+        'Contribution'       : user_contributions,
+        'Review Stars'       : review_stars,
+        'Average Price'      : average_prices,
+        'Taste Stars'        : taste_stars,
+        'Environment Stars'  : environment_stars,
+        'Service Stars'      : service_stars,
+        'Review'             : review_texts,
+        'Recommendations'    : recommendations,
+        'Praises'            : praises,
+        'Comments'           : comments
+    })
+
+
+    #--Use df method to Write into file
+    OUTPUT_FILE = outputPath + 'df_review.csv'
+    entry_review.to_csv(OUTPUT_FILE, header=not os.path.exists(OUTPUT_FILE), index=False, encoding='utf-8', mode='a')
