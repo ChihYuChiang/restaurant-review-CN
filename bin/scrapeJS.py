@@ -155,7 +155,7 @@ if True:
 
     #Acquire the cauldron
     #'raw/main/' or 'raw/review/'
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review2/')
+    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review/')
 
     #Concat the extracted info to a united df
     #ext = extract.mainPage or extract.review
