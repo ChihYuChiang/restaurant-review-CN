@@ -10,14 +10,34 @@ import os
 import sys
 
 
+#--Target city
+#bj / sh / cd / gz
+CITY_CODE = 'sh'
+
+
 #--Establish necessary folder structure
-utils.createFolders(settings.OUTPUT_PATH)
+utils.createFolders(settings.OUTPUT_PATH, CITY_CODE)
 
 
 #--Source restaurent list
-items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD)
+items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, CITY_CODE)
 
 
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Collect URL
+------------------------------------------------------------
+'''
+#Section switch
+if True:
+
+    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone_2.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
 
 
 
@@ -114,7 +134,7 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='../data/raw/review/')
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, CITY_CODE))
 
     len(shopIds_problematic)
 
@@ -134,7 +154,7 @@ Extract HTML -- Main and review
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
 
     #Make all html files as soups in a soup cauldron
     def makeSoups(fldr):
@@ -155,7 +175,7 @@ if True:
 
     #Acquire the cauldron
     #'raw/main/' or 'raw/review/'
-    soupCauldron = makeSoups(settings.OUTPUT_PATH + 'raw/review/')
+    soupCauldron = makeSoups('{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, CITY_CODE))
 
     #Concat the extracted info to a united df
     #ext = extract.mainPage or extract.review
@@ -165,7 +185,7 @@ if True:
     #Output to a file
     #Support batch extraction
     #'df_main.csv' or 'df_review.csv'
-    fullOutputPath = settings.OUTPUT_PATH + 'df_review.csv'
+    fullOutputPath = '{0}df_review_{1}.csv'.format(settings.OUTPUT_PATH, CITY_CODE)
     df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
 
 
@@ -185,7 +205,7 @@ if False:
 
     #--Extra shop info in main page
     #Read the corresponding dfs
-    fldr = settings.OUTPUT_PATH + 'raw/main/'
+    fldr = '{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, CITY_CODE)
     dfs_extraInfo_HTML = (pd.read_csv(fldr + filename) for filename in os.listdir(fldr) if filename[0:2] == 'df')
 
     #Extract each row and write into a new df
@@ -210,4 +230,4 @@ if False:
     df_extraInfo = pd.concat(genEntries(dfs_extraInfo_HTML), ignore_index=True).drop_duplicates(subset='shopID')
 
     #Output to a file
-    df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo.csv', index=False, encoding='utf-8')
+    df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo_{}.csv'.format(CITY_CODE), index=False, encoding='utf-8')
