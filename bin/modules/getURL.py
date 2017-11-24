@@ -40,7 +40,7 @@ def zones(zoneList, prefix, city):
         df_url = pd.DataFrame(df_url, index=None)
         return df_url
 
-    for i in range(0, len(zoneList)):
+    for i in range(len(zoneList)):
         #Initialize
         id = zoneList[i].split('/')[-1][:-5]
         currentPage = 1
@@ -64,7 +64,7 @@ def zones(zoneList, prefix, city):
                 #If not arrive retry cap, sleep and continue next attempt
                 else:
                     currentPage = j
-                    time.sleep(random.uniform(10, 30))
+                    time.sleep(random.uniform(3, 7) * (attempt + 1))
                     print(r'{0} - retry {1}'.format(id, attempt + 1))
                     continue
             
@@ -74,7 +74,7 @@ def zones(zoneList, prefix, city):
         df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, city, prefix, id))
         print(r'{} - done!'.format(id))
 
-        time.sleep(random.uniform(20, 40))
+        time.sleep(random.uniform(3, 7))
 
 
 #--Combine main page lists
