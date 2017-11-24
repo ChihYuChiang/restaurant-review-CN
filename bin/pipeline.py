@@ -1,5 +1,6 @@
 from modules import collectHTML as collect
 from modules import extractHTML as extract
+from modules import getURL as get
 from modules import utils
 from modules import settings
 from bs4 import BeautifulSoup
@@ -39,6 +40,7 @@ if True:
 
     zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone_2.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
 
+    get.zones(zoneList[5:100], 'r', CITY_CODE)
 
 
 

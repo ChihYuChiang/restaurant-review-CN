@@ -32,7 +32,7 @@ def sourceItem(sourcePath, reviewThreshold, city):
     fullSourcePath = '{0}raw_{1}/url/dianping_lis.csv'.format(sourcePath, city)
     if not os.path.exists(fullSourcePath):
         #Issue an warning
-        print('List file of city {} not found.'.format(city), line=None)
+        print('List file of city {} not found.'.format(city))
 
         #Return items = None if no list file
         return None
