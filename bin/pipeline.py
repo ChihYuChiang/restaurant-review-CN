@@ -40,7 +40,7 @@ if True:
 
     zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone_2.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
 
-    get.zones(zoneList[18:100], 'r', CITY_CODE)
+    get.zones(zoneList[100:200], 'r', CITY_CODE)
 
 
 

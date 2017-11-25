@@ -42,7 +42,8 @@ def zones(zoneList, prefix, city):
 
     for i in range(len(zoneList)):
         #Initialize
-        id = zoneList[i].split('/')[-1][:-5]
+        cutOff = [m for m in re.finditer('\D', zoneList[i].split('/')[-1])][-1].end() - 1
+        id = zoneList[i].split('/')[-1][:cutOff]
         currentPage = 1
         df_url_final = pd.DataFrame()
 
