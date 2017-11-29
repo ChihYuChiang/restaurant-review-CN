@@ -32,19 +32,32 @@ items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, CITY_C
 
 '''
 ------------------------------------------------------------
-Collect URL
+Collect URL lists
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
+
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
 
     get.zones(zoneList, '', CITY_CODE)
 
 
-if True:
-    #Combine the lists
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Combine URL lists
+------------------------------------------------------------
+'''
+#Section switch
+if False:
+
     get.combineLis(CITY_CODE)
 
 
