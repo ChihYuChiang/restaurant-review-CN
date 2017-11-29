@@ -36,11 +36,19 @@ Collect URL
 ------------------------------------------------------------
 '''
 #Section switch
+if False:
+    #Acquire restaurant list for each zone
+    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
+
+    get.zones(zoneList, '', CITY_CODE)
+
+
 if True:
+    #Combine the lists
+    get.combineLis(CITY_CODE)
 
-    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone_2.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
 
-    get.zones(, 'r', CITY_CODE)
+
 
 
 

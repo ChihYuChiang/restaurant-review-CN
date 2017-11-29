@@ -88,4 +88,4 @@ def combineLis(city):
             li['source'] = filename.strip('.csv')
             lis = lis.append(li, ignore_index=True)
 
-    lis.drop(lis.columns[0], axis=1).drop_duplicates(subset='url').to_csv('{0}raw_{1}/url/dianping_lis.csv'.format(settings.OUTPUT_PATH, city, index=False))
+    lis.drop_duplicates(subset='url')[['Number', 'source', 'url']].to_csv('{0}raw_{1}/url/dianping_lis.csv'.format(settings.OUTPUT_PATH, city), index=False)
