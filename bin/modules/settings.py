@@ -1,3 +1,4 @@
+CITY_CODE = 'gz' #Target city bj / sh / cd / gz
 OUTPUT_PATH = '../data/'
 RETRY = 5 #How many times to retry when error in module
 PAGE_LIMIT = 5 #How many review pages per restaurant to save

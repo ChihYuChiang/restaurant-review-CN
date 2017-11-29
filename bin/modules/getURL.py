@@ -7,7 +7,7 @@ import random
 import os
 import re
 
-def zones(zoneList, prefix, city):
+def zones(zoneList, prefix):
     def getShopURL(zoneURL, page):
         reviewLinks = []
         comment_numbers = []
@@ -73,19 +73,19 @@ def zones(zoneList, prefix, city):
             #If no exception occurs (successful), break from attempt
             break
                 
-        df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, city, prefix, id))
+        df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE, prefix, id))
         print(r'{} - done!'.format(id))
 
         time.sleep(random.uniform(3, 7))
 
 
 #--Combine main page lists
-def combineLis(city):
+def combineLis():
     lis = pd.DataFrame()
-    for filename in os.listdir('{0}raw_{1}/url/'.format(settings.OUTPUT_PATH, city)):
+    for filename in os.listdir('{0}raw_{1}/url/'.format(settings.OUTPUT_PATH, settings.CITY_CODE)):
         if filename[0] == 'r':
-            li = pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, city, filename))
+            li = pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, filename))
             li['source'] = filename.strip('.csv')
             lis = lis.append(li, ignore_index=True)
 
-    lis.drop_duplicates(subset='url')[['Number', 'source', 'url']].to_csv('{0}raw_{1}/url/dianping_lis.csv'.format(settings.OUTPUT_PATH, city), index=False)
+    lis.drop_duplicates(subset='url')[['Number', 'source', 'url']].to_csv('{0}raw_{1}/url/dianping_lis.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE), index=False)

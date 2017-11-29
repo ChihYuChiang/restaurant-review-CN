@@ -11,17 +11,12 @@ import os
 import sys
 
 
-#--Target city
-#bj / sh / cd / gz
-CITY_CODE = 'sh'
-
-
 #--Establish necessary folder structure
-utils.createFolders(settings.OUTPUT_PATH, CITY_CODE)
+utils.createFolders(settings.OUTPUT_PATH, settings.CITY_CODE)
 
 
 #--Source restaurent list
-items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, CITY_CODE)
+items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, settings.CITY_CODE)
 
 
 
@@ -36,12 +31,12 @@ Collect URL lists
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
 
     #Acquire restaurant list for each zone
-    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone.csv'.format(settings.OUTPUT_PATH, CITY_CODE), header=None)[0])
+    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE), header=None)[0])
 
-    get.zones(zoneList, '', CITY_CODE)
+    get.zones(zoneList, '')
 
 
 
@@ -58,7 +53,7 @@ Combine URL lists
 #Section switch
 if False:
 
-    get.combineLis(CITY_CODE)
+    get.combineLis()
 
 
 
@@ -73,7 +68,7 @@ Collect HTML by Selenium
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
 
     #--Function to perform collection
     def collectBySelenium(items, collect):
@@ -123,7 +118,7 @@ if False:
 
     #--Perform collection by setting proper callback
     #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items_problematic, collect.reviewPage)
+    collectBySelenium(items[0:5], collect.mainPage)
 
 
 
@@ -157,7 +152,7 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, CITY_CODE))
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
 
     len(shopIds_problematic)
 
@@ -198,17 +193,17 @@ if False:
 
     #Acquire the cauldron
     #'raw/main/' or 'raw/review/'
-    soupCauldron = makeSoups('{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, CITY_CODE))
+    soupCauldron = makeSoups('{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
 
     #Concat the extracted info to a united df
     #ext = extract.mainPage or extract.review
     #.drop_duplicates(subset='shopID') if needed
-    df = pd.concat(genEntries(soupCauldron, ext=extract.review), ignore_index=True)
+    df = pd.concat(genEntries(soupCauldron, ext=extract.mainPage), ignore_index=True)
 
     #Output to a file
     #Support batch extraction
     #'df_main.csv' or 'df_review.csv'
-    fullOutputPath = '{0}df_review_{1}.csv'.format(settings.OUTPUT_PATH, CITY_CODE)
+    fullOutputPath = '{0}df_main_{1}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE)
     df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
 
 
@@ -228,7 +223,7 @@ if False:
 
     #--Extra shop info in main page
     #Read the corresponding dfs
-    fldr = '{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, CITY_CODE)
+    fldr = '{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, settings.CITY_CODE)
     dfs_extraInfo_HTML = (pd.read_csv(fldr + filename) for filename in os.listdir(fldr) if filename[0:2] == 'df')
 
     #Extract each row and write into a new df
@@ -253,4 +248,4 @@ if False:
     df_extraInfo = pd.concat(genEntries(dfs_extraInfo_HTML), ignore_index=True).drop_duplicates(subset='shopID')
 
     #Output to a file
-    df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo_{}.csv'.format(CITY_CODE), index=False, encoding='utf-8')
+    df_extraInfo.to_csv(settings.OUTPUT_PATH + 'df_extraInfo_{}.csv'.format(settings.CITY_CODE), index=False, encoding='utf-8')
