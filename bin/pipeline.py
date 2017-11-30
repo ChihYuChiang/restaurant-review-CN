@@ -71,7 +71,7 @@ Collect HTML by Selenium
 if True:
     
     #--Function to perform collection
-    def collectBySelenium(items, collect):
+    def collectBySelenium(items, target):
         for index, item in items.iterrows():
             #Initialize
             currentPage = 1
@@ -83,8 +83,14 @@ if True:
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
 
+                    #Decide the function to use
+                    targetFunctionMap = {
+                        0: collect.mainPage,
+                        1: collect.reviewPage
+                    }
+
                     #Collect html from each restaurant
-                    collect(item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
+                    targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
 
                 except Exception as e:
                     #If arrive retry cap, raise error and stop running
@@ -116,9 +122,9 @@ if True:
             time.sleep(random.uniform(3, 7))
 
 
-    #--Perform collection by setting proper callback
-    #`collect.mainPage`, `collect.reviewPage`
-    collectBySelenium(items[0:5], collect.mainPage)
+    #--Perform collection
+    #0 for mainPage, 1 for reviewPage
+    collectBySelenium(items[0:2000], 0)
 
 
 
@@ -191,20 +197,30 @@ if False:
             #Progress marker
             print(filename)
 
-    #Acquire the cauldron
-    #'raw/main/' or 'raw/review/'
-    soupCauldron = makeSoups('{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
+    def extractFolder(target):
+        #Decide the function and path to use
+        targetFunctionMap = {
+            0: {'txt': 'main', 'fun': extract.mainPage}
+            1: {'txt': 'review', 'fun': extract.reviewPage}
+        }
 
-    #Concat the extracted info to a united df
-    #ext = extract.mainPage or extract.review
-    #.drop_duplicates(subset='shopID') if needed
-    df = pd.concat(genEntries(soupCauldron, ext=extract.mainPage), ignore_index=True)
+        #Acquire the cauldron
+        soupCauldron = makeSoups('{0}raw_{1}/{2}/'.format(settings.OUTPUT_PATH, settings.CITY_CODE, targetFunctionMap[target]['text']))
 
-    #Output to a file
-    #Support batch extraction
-    #'df_main.csv' or 'df_review.csv'
-    fullOutputPath = '{0}df_main_{1}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE)
-    df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
+        #Concat the extracted info to a united df
+        #.drop_duplicates(subset='shopID') if needed
+        df = pd.concat(genEntries(soupCauldron, ext=targetFunctionMap[target]['fun']), ignore_index=True)
+
+        #Output to a file
+        #Support batch extraction
+        #'df_main.csv' or 'df_review.csv'
+        fullOutputPath = '{0}df_{1}_{2}.csv'.format(settings.OUTPUT_PATH, targetFunctionMap[target]['text'], settings.CITY_CODE)
+        df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
+
+
+    #--Perform extraction
+    #0 for mainPage, 1 for reviewPage
+    extractFolder(0)
 
 
 
@@ -216,6 +232,7 @@ if False:
 '''
 ------------------------------------------------------------
 Extract HTML -- Extra info
+(deprecated, only bj has this info)
 ------------------------------------------------------------
 '''
 #Section switch
