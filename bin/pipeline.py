@@ -34,9 +34,9 @@ Collect URL lists
 if False:
 
     #Acquire restaurant list for each zone
-    zoneList = list(pd.read_csv('{0}raw_{1}/url/dianping_zone.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE), header=None)[0])
+    zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList, '')
+    get.zones(zoneList)
 
 
 
@@ -69,7 +69,7 @@ Collect HTML by Selenium
 '''
 #Section switch
 if True:
-
+    
     #--Function to perform collection
     def collectBySelenium(items, collect):
         for index, item in items.iterrows():
@@ -84,7 +84,7 @@ if True:
                     pageValid = (item.Number // 20) + 1
 
                     #Collect html from each restaurant
-                    collect(item.shopId, settings.OUTPUT_PATH, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
+                    collect(item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
 
                 except Exception as e:
                     #If arrive retry cap, raise error and stop running

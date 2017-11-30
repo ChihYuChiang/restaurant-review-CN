@@ -7,7 +7,7 @@ import random
 import os
 import re
 
-def zones(zoneList, prefix):
+def zones(zoneList):
     def getShopURL(zoneURL, page):
         reviewLinks = []
         comment_numbers = []
@@ -73,7 +73,7 @@ def zones(zoneList, prefix):
             #If no exception occurs (successful), break from attempt
             break
                 
-        df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE, prefix, id))
+        df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONE_PREFIX, id))
         print(r'{} - done!'.format(id))
 
         time.sleep(random.uniform(3, 7))

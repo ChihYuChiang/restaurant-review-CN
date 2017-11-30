@@ -22,16 +22,6 @@ import sys
 Set up webdriver (browser)
 ------------------------------------------------------------
 '''
-#--Acquire updated user agents from: https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
-userAgentCandidates = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38'
-]
-
-
 #--Set options
 #Device capability
 def setupDcaps():
@@ -43,10 +33,9 @@ def setupDcaps():
 
     #Set custom headers
     #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
-    dcaps['phantomjs.page.customHeaders.User-Agent'] = userAgentCandidates[i]
+    dcaps['phantomjs.page.customHeaders.User-Agent'] = settings.USERAGENT_CANDIDATES[i]
     dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
-    dcaps['phantomjs.page.customHeaders.Cookie'] = 'PHOENIX_ID=0a010725-15e38404ab2-e498b4e; _hc.v=c9678f60-ffb1-70f3-6cc2-ca97c011b225.1492122470; __mta=43235098.1504182293440.1504182293440.1506927949288.2; _lxsdk=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;_lxsdk_cuid=15e383e817439-0148d385f6254f-e313761-384000-15e383e8175c8;aburl=1; cy=2; cye=beijing; s_ViewType=10'
-
+    dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
     return dcaps
 
 #Additional driver options
@@ -76,7 +65,7 @@ SERVICE_ARGS = [
 Browse and acquire html - restaurant review page
 ------------------------------------------------------------
 '''
-def reviewPage(shopId, outputPath, pageLimit, startingPage, inheritContent, **kwargs):
+def reviewPage(shopId, pageLimit, startingPage, inheritContent, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
@@ -125,7 +114,7 @@ def reviewPage(shopId, outputPath, pageLimit, startingPage, inheritContent, **kw
     browser.quit()
 
     #Save reviews, 1 restaurant per file
-    with open(outputPath + 'raw_{0}/review/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
+    with open(settings.OUTPUT_PATH + 'raw_{0}/review/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
         f.write(HTML_reviews)
 
 
@@ -140,7 +129,7 @@ def reviewPage(shopId, outputPath, pageLimit, startingPage, inheritContent, **kw
 Browse and acquire html - restaurant main page
 ------------------------------------------------------------
 '''
-def mainPage(shopId, outputPath, **kwargs):
+def mainPage(shopId, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
@@ -181,5 +170,5 @@ def mainPage(shopId, outputPath, **kwargs):
 
     #--Save info to file
     #Save main page, 1 restaurant per file
-    with open(outputPath + 'raw_{0}/main/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
+    with open(settings.OUTPUT_PATH + 'raw_{0}/main/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
         f.write(HTML_main)
