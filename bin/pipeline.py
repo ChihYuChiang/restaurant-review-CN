@@ -90,7 +90,7 @@ if True:
                     }
 
                     #Collect html from each restaurant
-                    targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent)
+                    targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent, curAttempt=attempt)
 
                 except Exception as e:
                     #If arrive retry cap, raise error and stop running
@@ -124,7 +124,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[0:2000], 0)
+    collectBySelenium(items[930:1500], 0)
 
 
 
@@ -158,7 +158,7 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
 
     len(shopIds_problematic)
 

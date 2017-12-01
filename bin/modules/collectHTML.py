@@ -39,7 +39,6 @@ def setupDcaps():
     return dcaps
 
 #Additional driver options
-DOWNLOAD_TIMEOUT = 20
 LOG_PATH = 'log/ghostdriver.log'
 
 #Establish necessary folder structure
@@ -65,14 +64,14 @@ SERVICE_ARGS = [
 Browse and acquire html - restaurant review page
 ------------------------------------------------------------
 '''
-def reviewPage(shopId, pageLimit, startingPage, inheritContent, **kwargs):
+def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
         desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
-    browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)    
+    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)    
 
 
     #--Initialize output object
@@ -129,14 +128,14 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, **kwargs):
 Browse and acquire html - restaurant main page
 ------------------------------------------------------------
 '''
-def mainPage(shopId, **kwargs):
+def mainPage(shopId, curAttempt, **kwargs):
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
         desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
-    browser.set_page_load_timeout(DOWNLOAD_TIMEOUT)
+    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
 
 
     #--Targeting a main page url and navigate to that page
@@ -148,7 +147,7 @@ def mainPage(shopId, **kwargs):
     #Actions
     try:
         #Wait until basic info and rec dish elements loaded
-        wait = WebDriverWait(browser, 10)
+        wait = WebDriverWait(browser, settings.DOWNLOAD_TIMEOUT)
         wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.sub-title'))) #Basic info
         wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.recommend-name + .J-more'))) #Rec dish
 
@@ -161,7 +160,12 @@ def mainPage(shopId, **kwargs):
         #Get HTML
         HTML_main = browser.execute_script('return document.getElementById("body").innerHTML')
 
-    except: HTML_main = str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+    except:
+        #If the error is not because of being blocked (get failed), try a couple of times, make an error-commented html and move on
+        #E.g. some buttons can't be found
+        if curAttempt + 3 >= settings.RETRY:
+            HTML_main = str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+        else: raise
 
 
     #--Close browser
