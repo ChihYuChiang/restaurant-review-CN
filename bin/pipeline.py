@@ -124,7 +124,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[930:1500], 0)
+    collectBySelenium(items[1500:2500], 0)
 
 
 
@@ -200,7 +200,7 @@ if False:
     def extractFolder(target):
         #Decide the function and path to use
         targetFunctionMap = {
-            0: {'txt': 'main', 'fun': extract.mainPage}
+            0: {'txt': 'main', 'fun': extract.mainPage},
             1: {'txt': 'review', 'fun': extract.reviewPage}
         }
 
