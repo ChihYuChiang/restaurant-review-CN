@@ -22,7 +22,7 @@ class MainSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        urls = ('http://www.dianping.com/shop/' + shopId for shopId in self.shopIds_problematic)
+        urls = ('http://www.dianping.com/shop/' + shopId for shopId in self.shopIds_problematic[0:100]) #Limit number of target per time/day (could be blocked if go over that)
 
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
