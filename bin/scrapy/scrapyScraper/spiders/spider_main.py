@@ -3,17 +3,22 @@ import pandas as pd
 import os, sys
 
 #Import customized modules
+#binpath is the path /bin
 binPath = os.path.split(os.getcwd())[0]
 sys.path.insert(0, binPath)
 from modules import utils as c_utils
 from modules import settings as c_settings
 
 
-class ReviewSpider(scrapy.Spider):
+class MainSpider(scrapy.Spider):
+    #Class main for command line calls
     name = "main"
-    items = c_utils.sourceItem(binPath + '/' + c_settings.OUTPUT_PATH, c_settings.REVIEW_THRESHOLD)
-    shopIds_problematic = c_utils.problematicResult(targetList=items.shopId, targetPath=os.path.split(binPath)[0] + '/data/raw/main/')
-    self.log('Number of target files = ' + len(shopIds_problematic))
+
+    #Initiate target items (problematic shops)
+    def __init__(self):
+        self.items = c_utils.sourceItem(binPath + '/' + c_settings.OUTPUT_PATH, c_settings.REVIEW_THRESHOLD, c_settings.CITY_CODE)
+        self.shopIds_problematic = c_utils.problematicResult(targetList=self.items.shopId, targetPath=os.path.split(binPath)[0] + '/data/raw_{}/main/'.format(c_settings.CITY_CODE))
+        self.log('Number of target files = ' + str(len(self.shopIds_problematic)))
 
 
     def start_requests(self):
@@ -25,7 +30,7 @@ class ReviewSpider(scrapy.Spider):
 
     def parse(self, response):
         shopId = response.url.strip('http://www.dianping.com/shop/')
-        filename = os.path.split(binPath)[0] + '/data/raw/main/' + '%s.html' % shopId
+        filename = os.path.split(binPath)[0] + '/data/raw_{}/main/'.format(c_settings.CITY_CODE) + '%s.html' % shopId
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
