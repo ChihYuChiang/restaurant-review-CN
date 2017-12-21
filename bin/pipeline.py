@@ -93,8 +93,10 @@ if True:
                     targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent, curAttempt=attempt)
 
                 except Exception as e:
-                    #If arrive retry cap, raise error and stop running
-                    if attempt + 1 == settings.RETRY: raise
+                    #If arrive retry cap, screenshot, raise error, and stop running
+                    if attempt + 1 == settings.RETRY:
+                        print(utils.errorScreenShot(e.browser))
+                        raise
 
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
@@ -124,7 +126,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[1500:2500], 0)
+    collectBySelenium(items[4596:4610], 1)
 
 
 

@@ -1,5 +1,4 @@
 import os
-import warnings
 import pandas as pd
 
 
@@ -11,6 +10,16 @@ def createFolders(outputPath, city):
     ]
     for p in paths:
         if not os.path.exists(p): os.makedirs(p)
+
+
+def errorScreenShot(browser):
+    #Print all we got
+    try: screenShot = browser.execute_script('return document.documentElement.innerHTML')
+    
+    #Else, note that there's no response
+    except: screenShot = 'No HTML response.'
+    
+    return screenShot
 
 
 def problematicResult(targetList, targetPath):

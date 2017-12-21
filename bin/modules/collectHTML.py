@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions
 import pandas as pd
 import time
 import random
+import re
 import os
 import sys
 
@@ -90,6 +91,17 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
         except Exception as e:
+            #--Deal with "illegal UTF encoding error"
+            #Check the exception message
+            if re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
+
+                #Issue error message
+                HTML_reviews = str(sys.exc_info())
+
+                #Break the loop for the pages and save the error message in the html
+                break
+
+
             #--Deal with "商户不存在" error, the internal error of the website
             #If the errorMessage class exists
             if len(browser.find_elements_by_class_name('errorMessage')) > 0:
@@ -125,6 +137,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
             #Pass the current page and content to the retry loop
             e.currentPage = p
             e.currentContent = HTML_reviews
+            e.browser = browser
 
             #Raise exception to be dealt with in pipeline
             raise e
