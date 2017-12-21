@@ -82,11 +82,11 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     for p in range(startingPage, pageLimit + 1):
         try:
             #Targeting a url and navigate to that page
-            url = 'http://www.dianping.com/shop/{0}/review_more?pageno={1}'.format(str(shopId), p)
+            url = 'http://www.dianping.com/shop/{0}/review_more/p{1}'.format(str(shopId), p)
             browser.get(url)
 
             #Screenshot
-            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("comment-list")[0].innerHTML') + '\n')
+            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-wrapper")[0].innerHTML') + '\n')
         
         except:
             #Deal with "商户不存在" error, the internal error of the website
