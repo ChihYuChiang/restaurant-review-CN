@@ -87,20 +87,47 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
             #Screenshot
             HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-wrapper")[0].innerHTML') + '\n')
-        
-        except:
-            #Deal with "商户不存在" error, the internal error of the website
-            try:
-                HTML_reviews = browser.execute_script('return document.getElementsByClassName("errorMessage")[0].innerHTML')
+
+
+        except Exception as e:
+            #--Deal with "商户不存在" error, the internal error of the website
+            #If the errorMessage class exists
+            if len(browser.find_elements_by_class_name('errorMessage')) > 0:
+
+                #Issue error message
+                HTML_reviews = '商户不存在'
 
                 #Break the loop for the pages and save the error message in the html
                 break
 
-            except Exception as e:
-                #Pass the current page and content to the retry loop
-                e.currentPage = p
-                e.currentContent = HTML_reviews
-                raise e
+
+            #--Deal with "商户暫停營業" error
+            #Check the shop's main page
+            #Do not try everytime the error occurs
+            if curAttempt >= 3:
+                url = 'http://www.dianping.com/shop/{0}'.format(str(shopId))
+                browser.get(url)
+
+                #Report main page access
+                print('Check main page..')
+
+                #If the mid-str0 class exists (general rating = 0)
+                if len(browser.find_elements_by_class_name('mid-str0')) > 0:
+
+                    #Issue error message
+                    HTML_reviews = '商户暫停營業'
+
+                    #Break the loop for the pages and save the error message in the html
+                    break
+
+
+            #--Other exceptions
+            #Pass the current page and content to the retry loop
+            e.currentPage = p
+            e.currentContent = HTML_reviews
+
+            #Raise exception to be dealt with in pipeline
+            raise e
 
         #Progress marker
         print('p{}'.format(p))
