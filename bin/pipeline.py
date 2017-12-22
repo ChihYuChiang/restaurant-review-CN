@@ -71,14 +71,15 @@ Collect HTML by Selenium
 if True:
     
     #--Function to perform collection
-    def collectBySelenium(items, target):
+    def collectBySelenium(items, target, infinite):
         for index, item in items.iterrows():
             #Initialize
             currentPage = 1
             currentContent = ''
+            attempt = 1
 
             #Retry several times for general errors not caught in the module
-            for attempt in range(settings.RETRY):
+            while attempt <= settings.RETRY:
                 try:
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
@@ -93,10 +94,17 @@ if True:
                     targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent, curAttempt=attempt)
 
                 except Exception as e:
-                    #If arrive retry cap, screenshot, raise error, and stop running
-                    if attempt + 1 == settings.RETRY:
+                    #If arrive retry cap, screenshot, decide if reset or break
+                    if attempt == settings.RETRY:
                         print(utils.errorScreenShot(e.browser))
-                        raise
+
+                        if infinite:
+                            #Reset after 10 mins
+                            attempt = 1
+                            time.sleep(random.uniform(40, 80) * 5)
+                            continue
+
+                        else: raise
 
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
@@ -110,8 +118,11 @@ if True:
                             currentContent = e.currentContent
                         except: pass
 
-                        time.sleep(random.uniform(20, 40) * (attempt + 1))
-                        print(r'{0} - retry {1}'.format(item.shopId, attempt + 1))
+                        time.sleep(random.uniform(20, 40) * (attempt) * 0.5)
+                        print(r'{0} - retry {1}'.format(item.shopId, attempt))
+
+                        #Update attempt and continue
+                        attempt += attempt
                         continue
                 
                 #If no exception occurs (successful), break from attempt
@@ -123,10 +134,13 @@ if True:
             #Set a random timeout between each successful request
             time.sleep(random.uniform(3, 7))
 
+            #Update attempt and continue
+            attempt += attempt
+
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[4570:5000], 1)
+    collectBySelenium(items[4643:5000], 1, infinite=True)
 
 
 

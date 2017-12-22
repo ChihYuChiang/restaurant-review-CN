@@ -110,7 +110,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
         except Exception as e:
             #--Deal with "商户不存在" error, the internal error of the website
             #If the errorMessage class exists
-            if len(browser.find_elements_by_class_name('errorMessage')) > 0:
+            if len(browser.find_elements_by_class_name('not-found')) > 0:
 
                 #Issue error message
                 HTML_reviews = '商户不存在'
@@ -120,8 +120,8 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
             #--Deal with "illegal UTF encoding error"
-            #Check the exception message when attempted a certain times
-            if curAttempt >= 3 and re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
+            #Check the exception message at the first attempt
+            if curAttempt == 1 and re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
 
                 #Issue error message
                 HTML_reviews = str(sys.exc_info())
@@ -131,9 +131,8 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
             #--Deal with "商户暫停營業" error
-            #Check the shop's main page
-            #Do not try everytime the error occurs
-            if curAttempt >= 3:
+            #Check the shop's main page at the first attempt
+            if curAttempt == 1:
                 #Setup a new browser
                 browser_main = webdriver.PhantomJS(
                     desired_capabilities=setupDcaps(),
@@ -172,7 +171,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
         print('p{}'.format(p))
 
         #Delay between each page
-        time.sleep(random.uniform(5, 15))
+        time.sleep(random.uniform(3, 7))
 
 
     #--Close browser
