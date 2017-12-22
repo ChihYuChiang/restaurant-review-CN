@@ -93,6 +93,9 @@ if True:
                     #Collect html from each restaurant
                     targetFunctionMap[target](item.shopId, pageLimit=min(settings.PAGE_LIMIT, pageValid), startingPage=currentPage, inheritContent=currentContent, curAttempt=attempt)
 
+                    #If no exception occurs (successful), break from attempt
+                    break
+
                 except Exception as e:
                     #If arrive retry cap, screenshot, decide if reset or break
                     if attempt == settings.RETRY:
@@ -102,7 +105,6 @@ if True:
                             #Reset after 10 mins
                             attempt = 1
                             time.sleep(random.uniform(40, 80) * 5)
-                            continue
 
                         else: raise
 
@@ -123,10 +125,6 @@ if True:
 
                         #Update attempt and continue
                         attempt += attempt
-                        continue
-                
-                #If no exception occurs (successful), break from attempt
-                break
 
             #Progress marker
             print(r'{} - done!'.format(item.shopId))
