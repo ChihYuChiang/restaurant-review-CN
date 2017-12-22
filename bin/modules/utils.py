@@ -14,11 +14,11 @@ def createFolders(outputPath, city):
 
 def errorScreenShot(browser):
     #Print all we got
-    try: screenShot = browser.execute_script('return document.documentElement.innerHTML')
+    try: screenShot = browser.execute_script('return document.documentElement.innerHTML')[:1000]
     
     #Else, note that there's no response
     except: screenShot = 'No HTML response.'
-    
+
     return screenShot
 
 

@@ -79,7 +79,7 @@ if True:
             attempt = 1
 
             #Retry several times for general errors not caught in the module
-            while attempt <= settings.RETRY:
+            while attempt:
                 try:
                     #Acquire valid review page number (20 reviews per page)
                     pageValid = (item.Number // 20) + 1
@@ -102,7 +102,7 @@ if True:
                         print(utils.errorScreenShot(e.browser))
 
                         if infinite:
-                            #Reset after 10 mins
+                            #Reset after 5 mins
                             attempt = 1
                             time.sleep(random.uniform(40, 80) * 5)
 
@@ -124,7 +124,7 @@ if True:
                         print(r'{0} - retry {1}'.format(item.shopId, attempt))
 
                         #Update attempt and continue
-                        attempt += attempt
+                        attempt += 1
 
             #Progress marker
             print(r'{} - done!'.format(item.shopId))
@@ -132,13 +132,10 @@ if True:
             #Set a random timeout between each successful request
             time.sleep(random.uniform(3, 7))
 
-            #Update attempt and continue
-            attempt += attempt
-
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[4643:5000], 1, infinite=True)
+    collectBySelenium(items[4702:5000], 1, infinite=True)
 
 
 
