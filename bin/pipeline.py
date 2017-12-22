@@ -110,7 +110,7 @@ if True:
                             currentContent = e.currentContent
                         except: pass
 
-                        time.sleep(random.uniform(20, 40))
+                        time.sleep(random.uniform(20, 40) * (attempt + 1))
                         print(r'{0} - retry {1}'.format(item.shopId, attempt + 1))
                         continue
                 
@@ -126,7 +126,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[4596:4610], 1)
+    collectBySelenium(items[4570:5000], 1)
 
 
 

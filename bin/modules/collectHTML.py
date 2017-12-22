@@ -82,26 +82,32 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     #--Browse and screenshot the pages
     for p in range(startingPage, pageLimit + 1):
         try:
-            #Targeting a url and navigate to that page
-            url = 'http://www.dianping.com/shop/{0}/review_more/p{1}'.format(str(shopId), p)
+            #--Targeting a url and navigate to that page
+            url = 'http://www.dianping.com/shop/{0}/review_all/p{1}'.format(str(shopId), p)
             browser.get(url)
 
-            #Screenshot
-            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-wrapper")[0].innerHTML') + '\n')
+            #--Expand all reviews
+            #Wait until review list loaded
+            wait = WebDriverWait(browser, settings.DOWNLOAD_TIMEOUT)
+            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.review-words')))
+
+            #Find all unfold buttons
+            #Use "elemnet(s)" so when no target is found, return Null instead of exception
+            unfoldButtons = browser.find_elements_by_css_selector('.fold')
+
+            #Click them all
+            actions = webdriver.ActionChains(browser)
+            for bt in unfoldButtons: actions.click(on_element=bt)
+            
+            #Perform actions
+            actions.perform()
+
+
+            #--Screenshot
+            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-items")[0].innerHTML') + '\n')
 
 
         except Exception as e:
-            #--Deal with "illegal UTF encoding error"
-            #Check the exception message
-            if re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
-
-                #Issue error message
-                HTML_reviews = str(sys.exc_info())
-
-                #Break the loop for the pages and save the error message in the html
-                break
-
-
             #--Deal with "商户不存在" error, the internal error of the website
             #If the errorMessage class exists
             if len(browser.find_elements_by_class_name('errorMessage')) > 0:
@@ -113,25 +119,45 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
                 break
 
 
+            #--Deal with "illegal UTF encoding error"
+            #Check the exception message when attempted a certain times
+            if curAttempt >= 3 and re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
+
+                #Issue error message
+                HTML_reviews = str(sys.exc_info())
+
+                #Break the loop for the pages and save the error message in the html
+                break
+
+
             #--Deal with "商户暫停營業" error
             #Check the shop's main page
             #Do not try everytime the error occurs
             if curAttempt >= 3:
+                #Setup a new browser
+                browser_main = webdriver.PhantomJS(
+                    desired_capabilities=setupDcaps(),
+                    service_log_path=LOG_PATH)
+                browser_main.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
+
+                #Get main page
                 url = 'http://www.dianping.com/shop/{0}'.format(str(shopId))
-                browser.get(url)
+                browser_main.get(url)
 
                 #Report main page access
                 print('Check main page..')
 
                 #If the mid-str0 class exists (general rating = 0)
-                if len(browser.find_elements_by_class_name('mid-str0')) > 0:
+                if len(browser_main.find_elements_by_class_name('mid-str0')) > 0:
 
                     #Issue error message
                     HTML_reviews = '商户暫停營業'
 
                     #Break the loop for the pages and save the error message in the html
                     break
-
+                
+                #Close main page browser
+                browser_main.quit()
 
             #--Other exceptions
             #Pass the current page and content to the retry loop
@@ -146,7 +172,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
         print('p{}'.format(p))
 
         #Delay between each page
-        time.sleep(random.uniform(3, 7))
+        time.sleep(random.uniform(5, 15))
 
 
     #--Close browser
