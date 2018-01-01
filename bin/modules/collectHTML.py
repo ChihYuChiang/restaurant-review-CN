@@ -72,16 +72,28 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     browser = webdriver.PhantomJS(
         desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
-    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)    
+    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT) 
 
 
     #--Initialize output object
     HTML_reviews = inheritContent
 
 
-    #--Browse and screenshot the pages
-    for p in range(startingPage, pageLimit + 1):
-        try:
+    try:
+        #--Enter through store main page
+        url = 'http://www.dianping.com/shop/{0}'.format(str(shopId))
+        browser.get(url)
+
+        #Report main page access
+        print('Access main page successful..')
+
+
+        #--Access "more review" page
+
+
+
+        #--Browse and screenshot the pages
+        for p in range(startingPage, pageLimit + 1):
             #--Targeting a url and navigate to that page
             url = 'http://www.dianping.com/shop/{0}/review_all/p{1}'.format(str(shopId), p)
             browser.get(url)
@@ -106,60 +118,44 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
             #--Screenshot
             HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-items")[0].innerHTML') + '\n')
 
+            #Progress marker
+            print('p{}'.format(p))
 
-        except Exception as e:
-            #--Deal with "商户不存在" error, the internal error of the website
-            #If the errorMessage class exists
-            if len(browser.find_elements_by_class_name('not-found')) > 0:
-
-                #Issue error message
-                HTML_reviews = '商户不存在'
-
-                #Break the loop for the pages and save the error message in the html
-                break
+            #Delay between each page
+            time.sleep(random.uniform(3, 7))
 
 
-            #--Deal with "illegal UTF encoding error"
-            #Check the exception message at the first attempt
-            if curAttempt == 1 and re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
+    except Exception as e:
+        #--Deal with "商户暫停營業" error
+        #If the mid-str0 class exists (general rating = 0)
+        if len(browser_main.find_elements_by_class_name('mid-str0')) > 0:
 
-                #Issue error message
-                HTML_reviews = str(sys.exc_info())
-
-                #Break the loop for the pages and save the error message in the html
-                break
+            #Issue error message and pass
+            HTML_reviews = '商户暫停營業'
+            pass
 
 
-            #--Deal with "商户暫停營業" error
-            #Check the shop's main page at the first attempt
-            if curAttempt == 1:
-                #Setup a new browser
-                browser_main = webdriver.PhantomJS(
-                    desired_capabilities=setupDcaps(),
-                    service_log_path=LOG_PATH)
-                browser_main.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
+        #--Deal with "商户不存在" error, the internal error of the website
+        #If the errorMessage class exists
+        elif len(browser.find_elements_by_class_name('not-found')) > 0:
 
-                #Get main page
-                url = 'http://www.dianping.com/shop/{0}'.format(str(shopId))
-                browser_main.get(url)
+            #Issue error message and pass
+            HTML_reviews = '商户不存在'
+            pass
 
-                #Report main page access
-                print('Check main page..')
 
-                #If the mid-str0 class exists (general rating = 0)
-                if len(browser_main.find_elements_by_class_name('mid-str0')) > 0:
+        #--Deal with "illegal UTF encoding error"
+        #Check the exception message at the first attempt
+        elif curAttempt == 1 and re.search('illegal UTF-16 sequence', str(sys.exc_info()[1])) is not None:
 
-                    #Issue error message
-                    HTML_reviews = '商户暫停營業'
+            #Issue error message and pass
+            HTML_reviews = str(sys.exc_info())
+            pass
 
-                    #Break the loop for the pages and save the error message in the html
-                    break
-                
-                #Close main page browser
-                browser_main.quit()
 
-            #--Other exceptions
-            #Pass the current page and content to the retry loop
+        #--Other exceptions
+        #Pass the current page and content to the retry loop
+        else:
             e.currentPage = p
             e.currentContent = HTML_reviews
             e.browser = browser
@@ -167,19 +163,14 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
             #Raise exception to be dealt with in pipeline
             raise e
 
-        #Progress marker
-        print('p{}'.format(p))
 
-        #Delay between each page
-        time.sleep(random.uniform(3, 7))
-
-
-    #--Close browser
-    browser.quit()
-
-    #Save reviews, 1 restaurant per file
+    #--Clean up
+    #Write output into file
     with open(settings.OUTPUT_PATH + 'raw_{0}/review/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
-        f.write(HTML_reviews)
+        f.write(output)
+
+    #Close browser and move on to the next shop
+    browser.quit()
 
 
 
