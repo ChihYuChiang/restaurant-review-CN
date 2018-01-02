@@ -73,6 +73,9 @@ if True:
     #--Function to perform collection
     def collectBySelenium(items, target, infinite):
         for index, item in items.iterrows():
+            #Start marker
+            print('Start {}'.format(item.shopId))
+
             #Initialize
             currentPage = 1
             currentContent = ''
@@ -135,7 +138,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[4789:4805], 1, infinite=True)
+    collectBySelenium(items[4805:4850], 1, infinite=True)
 
 
 

@@ -66,6 +66,14 @@ Browse and acquire html - restaurant review page
 ------------------------------------------------------------
 '''
 def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kwargs):
+    #--Inject var for testing
+    # shopId = 8025190
+    # pageLimit = 5
+    # startingPage = 1
+    # inheritContent = ''
+    # curAttempt = 1
+
+
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
@@ -84,10 +92,6 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     HTML_reviews = inheritContent
 
 
-    #--Inject var for testing
-    # shopId = 8025190
-
-
     try:
         #--Enter through dianping then store main page
         browser.get('http://www.dianping.com/')
@@ -99,14 +103,24 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
         print('Main page accessed..')
 
 
-        #--Access "more review" page (page 1)
+        #--Access starting page
+        #Access "more review" page (page 1)
         browser.get('http://www.dianping.com/shop/{0}/review_all'.format(str(shopId)))
-        
+
+        #Page 2+
+        if p >= 2:
+            #Wait until the page buttons loaded
+            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.reviews-pages')))
+
+            #Access target page
+            bt = browser.find_element_by_css_selector('.reviews-pages a[data-pg="{}"]'.format(str(p)))
+            webdriver.ActionChains(browser).click(on_element=bt).perform()
+
 
         #--Browse and screenshot the pages
         for p in range(startingPage, pageLimit + 1):
-            #--If not page 1, access the target page from page 1
-            if p >= 2:
+            #--If not starting page, access the target page from the previous page
+            if p > startingPage:
                 #Wait until the page buttons loaded
                 wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.reviews-pages')))
 
@@ -116,8 +130,8 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
             #--Expand all reviews
-            #Wait until review list loaded
-            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.reviews-items')))
+            #Wait until review list of the next page loaded
+            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.NextPage[data-pg="{}"]'.format(p + 1))))
 
             #Find all unfold buttons
             #Use "elemnet(s)" so when no target is found, return Null instead of exception
@@ -132,7 +146,8 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
             #--Screenshot
-            HTML_reviews += (browser.execute_script('return document.getElementsByClassName("reviews-items")[0].innerHTML') + '\n')
+            screenShot = browser.execute_script('return document.getElementsByClassName("reviews-items")[0].innerHTML') + '\n'
+            HTML_reviews += screenShot
 
             #Progress marker
             print('p{}'.format(p))
