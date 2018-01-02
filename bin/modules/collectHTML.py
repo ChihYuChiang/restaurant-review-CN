@@ -36,7 +36,7 @@ def setupDcaps():
     #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
     dcaps['phantomjs.page.customHeaders.User-Agent'] = settings.USERAGENT_CANDIDATES[i]
     dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
-    dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
+    # dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
     return dcaps
 
 #Additional driver options
@@ -72,36 +72,52 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     browser = webdriver.PhantomJS(
         desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
-    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT) 
+    # browser = webdriver.Chrome()
+    browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
+
+    #Wait object
+    wait = WebDriverWait(browser, settings.DOWNLOAD_TIMEOUT)
 
 
     #--Initialize output object
+    p = startingPage
     HTML_reviews = inheritContent
 
 
+    #--Inject var for testing
+    # shopId = 8025190
+
+
     try:
-        #--Enter through store main page
-        url = 'http://www.dianping.com/shop/{0}'.format(str(shopId))
-        browser.get(url)
+        #--Enter through dianping then store main page
+        browser.get('http://www.dianping.com/')
+        time.sleep(random.uniform(1, 3))
+        browser.get('http://www.dianping.com/shop/{0}'.format(str(shopId)))
+        time.sleep(random.uniform(1, 3))
 
         #Report main page access
-        print('Access main page successful..')
+        print('Main page accessed..')
 
 
-        #--Access "more review" page
-
-
+        #--Access "more review" page (page 1)
+        browser.get('http://www.dianping.com/shop/{0}/review_all'.format(str(shopId)))
+        
 
         #--Browse and screenshot the pages
         for p in range(startingPage, pageLimit + 1):
-            #--Targeting a url and navigate to that page
-            url = 'http://www.dianping.com/shop/{0}/review_all/p{1}'.format(str(shopId), p)
-            browser.get(url)
+            #--If not page 1, access the target page from page 1
+            if p >= 2:
+                #Wait until the page buttons loaded
+                wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.reviews-pages')))
+
+                #Access next page
+                bt = browser.find_element_by_css_selector('.reviews-pages .NextPage')
+                webdriver.ActionChains(browser).click(on_element=bt).perform()
+
 
             #--Expand all reviews
             #Wait until review list loaded
-            wait = WebDriverWait(browser, settings.DOWNLOAD_TIMEOUT)
-            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.review-words')))
+            wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.reviews-items')))
 
             #Find all unfold buttons
             #Use "elemnet(s)" so when no target is found, return Null instead of exception
@@ -128,7 +144,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     except Exception as e:
         #--Deal with "商户暫停營業" error
         #If the mid-str0 class exists (general rating = 0)
-        if len(browser_main.find_elements_by_class_name('mid-str0')) > 0:
+        if len(browser.find_elements_by_class_name('mid-str0')) > 0:
 
             #Issue error message and pass
             HTML_reviews = '商户暫停營業'
@@ -167,7 +183,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     #--Clean up
     #Write output into file
     with open(settings.OUTPUT_PATH + 'raw_{0}/review/{1}.html'.format(settings.CITY_CODE, str(shopId)), 'w+', encoding='utf-8') as f:
-        f.write(output)
+        f.write(HTML_reviews)
 
     #Close browser and move on to the next shop
     browser.quit()
