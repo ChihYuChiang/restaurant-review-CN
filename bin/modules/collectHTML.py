@@ -37,7 +37,12 @@ def setupDcaps():
     #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
     dcaps['phantomjs.page.customHeaders.User-Agent'] = settings.USERAGENT_CANDIDATES[i]
     dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
+
+    #!!!
+    #Fully customized cookie
+    #(Phantomjs uses cookie by default. Comment this line to let the browser generate natural cookies.)
     # dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
+    #!!!
     return dcaps
 
 #Additional driver options
