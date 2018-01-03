@@ -1,4 +1,5 @@
 from modules import settings
+from modules import utils
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
@@ -66,13 +67,14 @@ Browse and acquire html - restaurant review page
 ------------------------------------------------------------
 '''
 def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kwargs):
-    #--Inject var for testing
+    #!!!
+    #Inject var for debugging
     # shopId = 8025190
     # pageLimit = 5
     # startingPage = 1
     # inheritContent = ''
     # curAttempt = 1
-
+    #!!!
 
     #--Initiate browser (refresh the browser)
     #Replace with .Firefox(), or with the browser of choice (options could be different)
@@ -80,7 +82,11 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     browser = webdriver.PhantomJS(
         desired_capabilities=setupDcaps(),
         service_log_path=LOG_PATH)
+    
+    #!!!
     # browser = webdriver.Chrome()
+    #!!!
+
     browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
 
     #Wait object
@@ -157,11 +163,25 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
 
 
     except Exception as e:
+        #!!!
+        #Error screenshot for debug
+        print(utils.errorScreenShot(browser, strLimit=None))
+        #!!!
+
+        #--Deal with "no review" error (for some reason, the system doesn't show the rest of the review)
+        #If the no-review-wrapper class exists
+        if len(browser.find_elements_by_class_name('no-review-wrapper')) > 0:
+
+            #Preserve current reviews, issue error message, and pass
+            HTML_reviews += "<p>Review isn't shown even if we haven't achieved the actual review number limit.</p>"
+            pass
+
+
         #--Deal with "商户暫停營業" error
         #If the mid-str0 class exists (general rating = 0)
-        if len(browser.find_elements_by_class_name('mid-str0')) > 0:
+        elif len(browser.find_elements_by_class_name('mid-str0')) > 0:
 
-            #Issue error message and pass
+            #Issue error message and pass (save error message and move on to next store)
             HTML_reviews = '商户暫停營業'
             pass
 

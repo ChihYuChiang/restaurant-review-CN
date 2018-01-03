@@ -74,12 +74,13 @@ if True:
     def collectBySelenium(items, target, infinite):
         for index, item in items.iterrows():
             #Start marker
-            print('Start {}'.format(item.shopId))
+            print('{} - start'.format(item.shopId))
 
             #Initialize
             currentPage = 1
             currentContent = ''
             attempt = 1
+            cycleCount = 1
 
             #Retry several times for general errors not caught in the module
             while attempt:
@@ -105,9 +106,17 @@ if True:
                         print(utils.errorScreenShot(e.browser))
 
                         if infinite:
-                            #Reset after 5 mins
+                            #Reset attempt
                             attempt = 1
-                            time.sleep(random.uniform(40, 80) * 5)
+
+                            #Restart after couple of mins
+                            #The hibernation time is based on the restart cycle count
+                            print('Hibernate for {} mins..'.format(str(5 ** cycleCount)))
+                            time.sleep(random.uniform(40, 80) * 5 ** cycleCount)
+                            
+                            #Update restart cycle count
+                            cycleCount += 1
+                            print('{0} - restart {1}'.format(item.shopId, str(cycleCount - 1)))
 
                         else: raise
 
@@ -124,13 +133,13 @@ if True:
                         except: pass
 
                         time.sleep(random.uniform(20, 40) * (attempt) * 0.5)
-                        print(r'{0} - retry {1}'.format(item.shopId, attempt))
+                        print(r'Retry {}'.format(attempt))
 
                         #Update attempt and continue
                         attempt += 1
 
             #Progress marker
-            print(r'{} - done!'.format(item.shopId))
+            print(r'Done!')
 
             #Set a random timeout between each successful request
             time.sleep(random.uniform(3, 7))
@@ -138,7 +147,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[4805:4850], 1, infinite=True)
+    collectBySelenium(items[5042:5200], 1, infinite=True)
 
 
 

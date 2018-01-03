@@ -12,9 +12,9 @@ def createFolders(outputPath, city):
         if not os.path.exists(p): os.makedirs(p)
 
 
-def errorScreenShot(browser):
+def errorScreenShot(browser, strLimit=1000):
     #Print all we got
-    try: screenShot = browser.execute_script('return document.documentElement.innerHTML')[:1000]
+    try: screenShot = browser.execute_script('return document.documentElement.innerHTML')[:strLimit]
     
     #Else, note that there's no response
     except: screenShot = 'No HTML response.'
