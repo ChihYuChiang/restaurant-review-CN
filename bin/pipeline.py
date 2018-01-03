@@ -147,7 +147,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[5042:5200], 1, infinite=True)
+    collectBySelenium(items[5043:5200], 1, infinite=True)
 
 
 

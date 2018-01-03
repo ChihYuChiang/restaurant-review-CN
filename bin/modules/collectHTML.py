@@ -165,7 +165,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     except Exception as e:
         #!!!
         #Error screenshot for debug
-        print(utils.errorScreenShot(browser, strLimit=None))
+        # print(utils.errorScreenShot(browser, strLimit=None))
         #!!!
 
         #--Deal with "no review" error (for some reason, the system doesn't show the rest of the review)
