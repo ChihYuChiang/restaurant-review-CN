@@ -189,7 +189,7 @@ def extraInfo(soup_score, soup_dish, shopId):
 Extract info from HTML - review
 ------------------------------------------------------------
 '''
-def review(soup, filename, outputPath):
+def reviewPage(soup, filename, outputPath):
     #--Get review chunks as a list
     try:
         chunks = soup.findAll('li', attrs = {'data-id': True})
