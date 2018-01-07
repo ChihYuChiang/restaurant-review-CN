@@ -30,7 +30,7 @@ def zones(zoneList):
                 except: url_store = None
                 reviewLinks.append(url_store)
             for chunk in chunks:
-                try: comment_number = chunk.find('span', attrs={'class': 'sear-highlight'}).find('b').getText()
+                try: comment_number = chunk.find('a', attrs={'class': 'review-num'}).find('b').getText()
                 except: comment_number = None
                 comment_numbers.append(comment_number)
 

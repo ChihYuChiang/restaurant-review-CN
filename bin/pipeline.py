@@ -105,6 +105,7 @@ if True:
                     if attempt == settings.RETRY:
                         print(utils.errorScreenShot(e.browser))
 
+                        #If infinite attempt
                         if infinite:
                             #Reset attempt
                             attempt = 1
@@ -147,7 +148,7 @@ if True:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items[5470:], 1, infinite=True)
+    collectBySelenium(items[:5], 0, infinite=False)
 
 
 
@@ -181,7 +182,7 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/main/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
 
     len(shopIds_problematic)
 
@@ -228,7 +229,7 @@ if False:
         }
 
         #Acquire the cauldron
-        soupCauldron = makeSoups('{0}raw_{1}/{2}/'.format(settings.OUTPUT_PATH, settings.CITY_CODE, targetFunctionMap[target]['text']))
+        soupCauldron = makeSoups('{0}raw_{1}/{2}/'.format(settings.OUTPUT_PATH, settings.CITY_CODE, targetFunctionMap[target]['txt']))
 
         #Concat the extracted info to a united df
         #.drop_duplicates(subset='shopID') if needed
@@ -237,7 +238,7 @@ if False:
         #Output to a file
         #Support batch extraction
         #'df_main.csv' or 'df_review.csv'
-        fullOutputPath = '{0}df_{1}_{2}.csv'.format(settings.OUTPUT_PATH, targetFunctionMap[target]['text'], settings.CITY_CODE)
+        fullOutputPath = '{0}df_{1}_{2}.csv'.format(settings.OUTPUT_PATH, targetFunctionMap[target]['txt'], settings.CITY_CODE)
         df.to_csv(fullOutputPath, index=False, encoding='utf-8', mode='a', header=not os.path.isfile(fullOutputPath))
 
 
