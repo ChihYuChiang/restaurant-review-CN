@@ -31,7 +31,7 @@ Collect URL lists
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
 
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
@@ -68,7 +68,7 @@ Collect HTML by Selenium
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
     
     #--Function to perform collection
     def collectBySelenium(items, target, infinite):

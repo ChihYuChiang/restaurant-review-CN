@@ -1,5 +1,6 @@
 from modules import settings
-from urllib import request
+from modules import utils
+from selenium import webdriver
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -7,6 +8,8 @@ import random
 import os
 import re
 
+
+#--Get shop main page url
 def zones(zoneList):
     def getShopURL(zoneURL, page):
         reviewLinks = []
@@ -15,8 +18,14 @@ def zones(zoneList):
 
         url_final = zoneURL + 'p' + str(page)
         try:
-            response = request.urlopen(url_final)
-            html = response.read().decode('utf-8')
+            browser = webdriver.PhantomJS(
+                desired_capabilities=utils.setupBrowserDcaps(),
+                service_log_path=settings.LOG_PATH)
+            browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
+
+            browser.get(url_final)
+            
+            html = browser.execute_script('return document.documentElement.innerHTML')
             html = BeautifulSoup(html, 'html.parser')
         except: raise
 

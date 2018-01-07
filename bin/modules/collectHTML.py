@@ -1,7 +1,6 @@
 from modules import settings
 from modules import utils
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -12,52 +11,8 @@ import re
 import os
 import sys
 
-
-
-
-
-
-
-
-'''
-------------------------------------------------------------
-Set up webdriver (browser)
-------------------------------------------------------------
-'''
-#--Set options
-#Device capability
-def setupDcaps():
-    dcaps = DesiredCapabilities.PHANTOMJS
-    dcaps['phantomjs.page.settings.loadImages'] = False
-
-    #Randomly acquire 0 to 4
-    i = int(((time.time() % 1 * 10) // 1) // 2)
-
-    #Set custom headers
-    #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
-    dcaps['phantomjs.page.customHeaders.User-Agent'] = settings.USERAGENT_CANDIDATES[i]
-    dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
-
-    #!!!
-    #Fully customized cookie
-    #(Phantomjs uses cookie by default. Comment this line to let the browser generate natural cookies.)
-    # dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
-    #!!!
-    return dcaps
-
-#Additional driver options
-LOG_PATH = 'log/ghostdriver.log'
-
 #Establish necessary folder structure
-if not os.path.exists(LOG_PATH.split('/')[0]): os.makedirs(LOG_PATH.split('/')[0])
-
-#Can be added to webdriver.PhantomJS(service_args)
-#Currently unused
-SERVICE_ARGS = [
-    '--proxy=127.0.0.1:9999',
-    '--proxy-type=http',
-    '--ignore-ssl-errors=true'
-]
+if not os.path.exists(settings.LOG_PATH.split('/')[0]): os.makedirs(settings.LOG_PATH.split('/')[0])
 
 
 
@@ -85,8 +40,8 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
-        desired_capabilities=setupDcaps(),
-        service_log_path=LOG_PATH)
+        desired_capabilities=utils.setupBrowserDcaps(),
+        service_log_path=settings.LOG_PATH)
     
     #!!!
     # browser = webdriver.Chrome()
@@ -245,8 +200,8 @@ def mainPage(shopId, curAttempt, **kwargs):
     #Replace with .Firefox(), or with the browser of choice (options could be different)
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
-        desired_capabilities=setupDcaps(),
-        service_log_path=LOG_PATH)
+        desired_capabilities=utils.setupBrowserDcaps(),
+        service_log_path=settings.LOG_PATH)
     browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
 
     #!!!

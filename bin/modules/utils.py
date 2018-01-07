@@ -1,5 +1,26 @@
 import os
 import pandas as pd
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+
+def setupBrowserDcaps(): #Device capability
+    dcaps = DesiredCapabilities.PHANTOMJS
+    dcaps['phantomjs.page.settings.loadImages'] = False
+
+    #Randomly acquire 0 to 4
+    i = int(((time.time() % 1 * 10) // 1) // 2)
+
+    #Set custom headers
+    #Ref:http://phantomjs.org/api/webpage/property/custom-headers.html
+    dcaps['phantomjs.page.customHeaders.User-Agent'] = settings.USERAGENT_CANDIDATES[i]
+    dcaps['phantomjs.page.customHeaders.Accept'] = 'application/json, text/javascript'
+
+    #!!!
+    #Fully customized cookie
+    #(Phantomjs uses cookie by default. Comment this line to let the browser generate natural cookies.)
+    # dcaps['phantomjs.page.customHeaders.Cookie'] = settings.HEADER_COOKIE
+    #!!!
+    return dcaps
 
 
 def createFolders(outputPath, city):
