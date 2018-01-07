@@ -1,6 +1,14 @@
 import os
+import time
 import pandas as pd
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from modules import settings
+
+
+def reportError():
+    print('{0} {1}'.format(
+        str(sys.exc_info()[0]),
+        str(sys.exc_info()[1])))
 
 
 def setupBrowserDcaps(): #Device capability

@@ -3,7 +3,7 @@
 General settings
 ------------------------------------------------------------
 '''
-CITY_CODE = 'sh' #Target city bj / sh / cd / gz
+CITY_CODE = 'cd' #Target city bj / sh / cd / gz
 OUTPUT_PATH = '../data/'
 RETRY = 5 #How many times to retry when error in module
 

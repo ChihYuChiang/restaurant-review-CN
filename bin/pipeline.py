@@ -36,7 +36,7 @@ if True:
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList)
+    get.zones(zoneList[0:1])
 
 
 
@@ -123,9 +123,7 @@ if False:
 
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
-                        print('{0} {1}'.format(
-                            str(sys.exc_info()[0]),
-                            str(sys.exc_info()[1])))
+                        utils.reportError()
                         
                         #If the error coming from specific review page, update the current page and current content vars
                         try:
