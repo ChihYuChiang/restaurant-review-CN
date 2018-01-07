@@ -108,12 +108,15 @@ def mainPage(soup, filename, outputPath):
         'tag_tuan'     : [tag_tuan],
         'tag_ding'     : [tag_ding],
         'tag_wai'      : [tag_wai],
-        'tag_cu'       : [tag_cu],
-        'extraInfo'    : [extraInfo],
-        'good_tags'    : [good_tags],
-        'good_nos'     : [good_nos],
-        'bad_tags'     : [bad_tags],
-        'bad_nos'      : [bad_nos]
+        'tag_cu'       : [tag_cu]
+        #!!!
+        #Info can't collect after 1/1/2018
+        # 'extraInfo'    : [extraInfo],
+        # 'good_tags'    : [good_tags],
+        # 'good_nos'     : [good_nos],
+        # 'bad_tags'     : [bad_tags],
+        # 'bad_nos'      : [bad_nos]
+        #!!!
     })
 
     #Return single entry
