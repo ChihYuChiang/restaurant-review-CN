@@ -30,16 +30,13 @@ def getShopURL(zoneURL, page, browser):
     #--Access a specific page
     url_final = zoneURL + 'p' + str(page)
     browser.get(url_final)
-    browser.get('http://www.dianping.com/search/category/8/10/r5893o10p1')
 
 
     #--Acquire raw HTML
     html = browser.execute_script('return document.documentElement.innerHTML')
 
     #If go over the last page, break, move on to next zone
-    if re.search('没有找到相应的商户', html) is not None or len(browser.find_elements_by_class_name('not-found')) > 0:
-        nonlocal pLimit = 1
-        return
+    if re.search('没有找到相应的商户', html) is not None or len(browser.find_elements_by_class_name('not-found')) > 0: return (None, True)
 
 
     #--Parse raw HTML
@@ -55,7 +52,8 @@ def getShopURL(zoneURL, page, browser):
         reviewLinks.append(url_store)
 
         #Review number
-        comment_number = chunk.select('.review-num b')[0].getText()
+        try: comment_number = chunk.select('.review-num b')[0].getText()
+        except: comment_number = None
         commentNumbers.append(comment_number)
 
 
@@ -68,7 +66,7 @@ def getShopURL(zoneURL, page, browser):
 
 
     #--Return the result if no error occurs
-    return df_url
+    return (df_url, False)
 
 
 #--Implement on each zone
@@ -77,6 +75,7 @@ def zones(zoneList, infinite):
         #--Initialize
         cycleCount = 1
         currentPage = 1
+        attempt = 1
         df_url_final = pd.DataFrame()
 
         #Identify the shop id
@@ -86,24 +85,25 @@ def zones(zoneList, infinite):
         #Progress marker
         print(id + ' - start')
 
-        #Initialize browser
-        browser = webdriver.PhantomJS(
-            desired_capabilities=utils.setupBrowserDcaps(),
-            service_log_path=settings.LOG_PATH)
-        browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
-
-        #Enter through the dianping main page
-        browser.get('http://www.dianping.com/')
-
 
         while attempt:
-            #--Scrape each page
             try:
+                #--Initialize browser
+                browser = webdriver.PhantomJS(
+                    desired_capabilities=utils.setupBrowserDcaps(),
+                    service_log_path=settings.LOG_PATH)
+                browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
+
+                #Enter through the dianping main page
+                browser.get('http://www.dianping.com/')
+
+
+                #--Scrape each page
                 for j in range(currentPage, 51):
-                    df_url = getShopURL(zoneList[i], j, browser)
+                    df_url, _mo = getShopURL(zoneList[i], j, browser)
                     
                     #If go over the last page, break, move on to next zone
-                    if df_url is None and pLimit == 1: break
+                    if _mo: break
 
                     #If no list returns, raise and retry
                     assert len(df_url) > 0
@@ -122,7 +122,7 @@ def zones(zoneList, infinite):
 
             except:
                 #If arrive retry cap, raise error and stop running
-                if attempt + 1 == settings.RETRY:
+                if attempt == settings.RETRY:
                     if infinite:
                         attempt = 1
                         
@@ -134,6 +134,8 @@ def zones(zoneList, infinite):
                         #Update and restart cycle count
                         cycleCount += 1
                         currentPage = j
+                        utils.reportError(sys)
+                        browser.quit()
                         print('{0} - restart {1}'.format(id, str(cycleCount - 1)))
                     else: raise
 
@@ -141,8 +143,10 @@ def zones(zoneList, infinite):
                 else:
                     currentPage = j
                     utils.reportError(sys)
-                    time.sleep(random.uniform(3, 7) * (attempt + 1))
-                    print(r'Retry {}'.format(attempt + 1))
+                    browser.quit()
+                    time.sleep(random.uniform(3, 7) * (attempt))
+                    print(r'Retry {}'.format(attempt))
+                    attempt += 1
             
             
         #--Output the shop list of a specific zone

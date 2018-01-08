@@ -36,7 +36,7 @@ if True:
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList[1:5], infinite=1)
+    get.zones(zoneList[2:], infinite=True)
 
 
 
@@ -117,6 +117,7 @@ if False:
                             
                             #Update restart cycle count
                             cycleCount += 1
+                            e.browser.quit()
                             print('{0} - restart {1}'.format(item.shopId, str(cycleCount - 1)))
 
                         else: raise
@@ -124,6 +125,7 @@ if False:
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
                         utils.reportError(sys)
+                        e.browser.quit()
                         
                         #If the error coming from specific review page, update the current page and current content vars
                         try:
