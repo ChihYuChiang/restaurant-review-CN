@@ -37,7 +37,9 @@ def getShopURL(zoneURL, page, browser):
     html = browser.execute_script('return document.documentElement.innerHTML')
 
     #If go over the last page, break, move on to next zone
-    if re.search('没有找到相应的商户', html) is not None or len(browser.find_elements_by_class_name('not-found')) > 0: return '!mo'
+    if re.search('没有找到相应的商户', html) is not None or len(browser.find_elements_by_class_name('not-found')) > 0:
+        nonlocal pLimit = 1
+        return
 
 
     #--Parse raw HTML
@@ -70,9 +72,10 @@ def getShopURL(zoneURL, page, browser):
 
 
 #--Implement on each zone
-def zones(zoneList):
+def zones(zoneList, infinite):
     for i in range(len(zoneList)):
         #--Initialize
+        cycleCount = 1
         currentPage = 1
         df_url_final = pd.DataFrame()
 
@@ -93,14 +96,14 @@ def zones(zoneList):
         browser.get('http://www.dianping.com/')
 
 
-        for attempt in range(settings.RETRY):
+        while attempt:
             #--Scrape each page
             try:
                 for j in range(currentPage, 51):
                     df_url = getShopURL(zoneList[i], j, browser)
                     
                     #If go over the last page, break, move on to next zone
-                    if len(df_url) == 0 and df_url == '!mo': break
+                    if df_url is None and pLimit == 1: break
 
                     #If no list returns, raise and retry
                     assert len(df_url) > 0
@@ -113,10 +116,26 @@ def zones(zoneList):
 
                     #Sleep before next zone
                     time.sleep(random.uniform(3, 7))
+                
+                #If no exception occurs (successful), break from attempt
+                break
 
             except:
                 #If arrive retry cap, raise error and stop running
-                if attempt + 1 == settings.RETRY: raise
+                if attempt + 1 == settings.RETRY:
+                    if infinite:
+                        attempt = 1
+                        
+                        #Restart after couple of mins
+                        #The hibernation time is based on the restart cycle count
+                        print('Hibernate for {} mins..'.format(str(5 ** cycleCount)))
+                        time.sleep(random.uniform(40, 80) * 5 ** cycleCount)
+                        
+                        #Update and restart cycle count
+                        cycleCount += 1
+                        currentPage = j
+                        print('{0} - restart {1}'.format(id, str(cycleCount - 1)))
+                    else: raise
 
                 #If not arrive retry cap, sleep and continue next attempt
                 else:
@@ -124,12 +143,8 @@ def zones(zoneList):
                     utils.reportError(sys)
                     time.sleep(random.uniform(3, 7) * (attempt + 1))
                     print(r'Retry {}'.format(attempt + 1))
-                    continue
             
-            #If no exception occurs (successful), break from attempt
-            break
             
-        
         #--Output the shop list of a specific zone
         df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONE_PREFIX, id))
 

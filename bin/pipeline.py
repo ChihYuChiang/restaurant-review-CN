@@ -36,7 +36,7 @@ if True:
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList[0:1], infinite=1)
+    get.zones(zoneList[1:5], infinite=1)
 
 
 
