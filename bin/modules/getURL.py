@@ -37,7 +37,7 @@ def getShopURL(zoneURL, page, browser):
     html = browser.execute_script('return document.documentElement.innerHTML')
 
     #If go over the last page, break, move on to next zone
-    if re.search('没有找到相应的商户', html) is not None: return '!mo'
+    if re.search('没有找到相应的商户', html) is not None or len(browser.find_elements_by_class_name('not-found')) > 0: return '!mo'
 
 
     #--Parse raw HTML
@@ -53,7 +53,7 @@ def getShopURL(zoneURL, page, browser):
         reviewLinks.append(url_store)
 
         #Review number
-        comment_number = chunks[0].select('.review-num b')[0].getText()
+        comment_number = chunk.select('.review-num b')[0].getText()
         commentNumbers.append(comment_number)
 
 
