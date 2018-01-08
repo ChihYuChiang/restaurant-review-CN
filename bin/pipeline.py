@@ -123,7 +123,7 @@ if False:
 
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
-                        utils.reportError()
+                        utils.reportError(sys)
                         
                         #If the error coming from specific review page, update the current page and current content vars
                         try:
