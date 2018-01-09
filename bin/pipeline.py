@@ -11,11 +11,11 @@ import os
 import sys
 
 
-#--Add file output (log) to print and error message
+#--Add file output (log) to print
+#When developing, make False
 if True:
-    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL, 'w'))
-    sys.stderr = utils.DoubleOutputTarget(sys.stderr, open(settings.LOGPATH_ERROR, 'w'))
-
+    #Log each session in different file
+    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + round(time.time()), 'w'))
 
 #--Establish necessary folder structure
 utils.createFolders(settings.OUTPUT_PATH, settings.CITY_CODE)
