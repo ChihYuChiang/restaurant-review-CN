@@ -125,6 +125,7 @@ def zones(zoneList, infinite):
                 if attempt == settings.RETRY:
                     if infinite:
                         attempt = 1
+                        utils.reportError(sys)
                         
                         #Restart after couple of mins
                         #The hibernation time is based on the restart cycle count
@@ -134,21 +135,22 @@ def zones(zoneList, infinite):
                         #Update and restart cycle count
                         cycleCount += 1
                         currentPage = j
-                        utils.reportError(sys)
                         browser.quit()
                         print('{0} - restart {1}'.format(id, str(cycleCount - 1)))
                     else: raise
 
                 #If not arrive retry cap, sleep and continue next attempt
                 else:
-                    currentPage = j
                     utils.reportError(sys)
-                    browser.quit()
+                    try:
+                        currentPage = j
+                        browser.quit()
+                    except: pass
                     time.sleep(random.uniform(3, 7) * (attempt))
                     print(r'Retry {}'.format(attempt))
                     attempt += 1
             
-            
+        
         #--Output the shop list of a specific zone
         df_url_final.to_csv('{0}raw_{1}/url/{2}{3}.csv'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONE_PREFIX, id))
 
