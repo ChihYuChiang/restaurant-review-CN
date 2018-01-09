@@ -12,7 +12,7 @@ import os
 import sys
 
 #Establish necessary folder structure
-if not os.path.exists(settings.LOG_PATH.split('/')[0]): os.makedirs(settings.LOG_PATH.split('/')[0])
+if not os.path.exists(settings.LOGPATH_PHANTOM.split('/')[0]): os.makedirs(settings.LOGPATH_PHANTOM.split('/')[0])
 
 
 
@@ -41,7 +41,7 @@ def reviewPage(shopId, pageLimit, startingPage, inheritContent, curAttempt, **kw
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
         desired_capabilities=utils.setupBrowserDcaps(),
-        service_log_path=settings.LOG_PATH)
+        service_log_path=settings.LOGPATH_PHANTOM)
     
     #!!!
     # browser = webdriver.Chrome()
@@ -201,7 +201,7 @@ def mainPage(shopId, curAttempt, **kwargs):
     #Place the corresponding driver (exe file) under C:\Users\XXXX\Anaconda3
     browser = webdriver.PhantomJS(
         desired_capabilities=utils.setupBrowserDcaps(),
-        service_log_path=settings.LOG_PATH)
+        service_log_path=settings.LOGPATH_PHANTOM)
     browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
 
     #!!!

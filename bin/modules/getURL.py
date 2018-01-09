@@ -92,7 +92,7 @@ def zones(zoneList, infinite):
                 #--Initialize browser
                 browser = webdriver.PhantomJS(
                     desired_capabilities=utils.setupBrowserDcaps(),
-                    service_log_path=settings.LOG_PATH)
+                    service_log_path=settings.LOGPATH_PHANTOM)
                 browser.set_page_load_timeout(settings.DOWNLOAD_TIMEOUT)
 
                 #Enter through the dianping main page

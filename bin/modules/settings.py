@@ -6,6 +6,8 @@ General settings
 CITY_CODE = 'cd' #Target city bj / sh / cd / gz
 OUTPUT_PATH = '../data/'
 RETRY = 10 #How many times to retry when error in module
+LOGPATH_GENERAL = 'log/general.log'
+LOGPATH_ERROR = 'log/error.log'
 
 #Collect review
 PAGE_LIMIT = 5 #How many review pages per restaurant to save
@@ -28,7 +30,7 @@ Browser
 ------------------------------------------------------------
 '''
 DOWNLOAD_TIMEOUT = 20 #Second
-LOG_PATH = 'log/ghostdriver.log'
+LOGPATH_PHANTOM = 'log/ghostdriver.log'
 USERAGENT_CANDIDATES = [#Acquire updated user agents from: https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0',

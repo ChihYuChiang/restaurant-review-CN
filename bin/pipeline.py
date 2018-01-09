@@ -11,6 +11,12 @@ import os
 import sys
 
 
+#--Add file output (log) to print and error message
+if True:
+    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL, 'w'))
+    sys.stderr = utils.DoubleOutputTarget(sys.stderr, open(settings.LOGPATH_ERROR, 'w'))
+
+
 #--Establish necessary folder structure
 utils.createFolders(settings.OUTPUT_PATH, settings.CITY_CODE)
 
@@ -36,7 +42,7 @@ if True:
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList[2:], infinite=True)
+    get.zones(zoneList[62:63], infinite=True)
 
 
 
@@ -125,10 +131,10 @@ if False:
                     #If not arrive retry cap, print exception info, sleep, and continue next attempt
                     else:
                         utils.reportError(sys)
-                        e.browser.quit()
                         
                         #If the error coming from specific review page, update the current page and current content vars
                         try:
+                            e.browser.quit()
                             currentPage = e.currentPage
                             currentContent = e.currentContent
                         except: pass

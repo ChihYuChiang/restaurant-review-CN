@@ -6,6 +6,22 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from modules import settings
 
 
+#--Transform stdout obj into a customized obj which outputs at both console and a file
+class DoubleOutputTarget(object):
+    def __init__(self, *outputFiles):
+        self.files = outputFiles
+
+    #Mockup the structure of original sys.stdout obj
+    def write(self, obj): #obj is what to be printed
+        for f in self.files:
+            f.write(obj)
+            f.flush() #flush from cache to file (Make the output to be visible immediately)
+
+    def flush(self):
+        for f in self.files:
+            f.flush()
+
+
 def reportError(sys):
     print('{0} {1}'.format(
         str(sys.exc_info()[0]),
