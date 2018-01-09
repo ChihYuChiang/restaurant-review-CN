@@ -75,6 +75,7 @@ def zones(zoneList, infinite):
         #--Initialize
         cycleCount = 1
         currentPage = 1
+        j = 1
         attempt = 1
         df_url_final = pd.DataFrame()
 
