@@ -68,16 +68,16 @@ def errorScreenShot(browser, strLimit=1000):
     return screenShot
 
 
-def problematicResult(targetList, targetPath):
+def problematicResult(targetList, targetPath, threshold):
     """
     problematic = missing + bad  
     missing = In the list but not in the folder  
     bad = In the folder but file size is sketchy
     """
-    target_missing = set(targetList) - set([fileName.strip('.html') for fileName in os.listdir(targetPath)])
+    target_missing = set(targetList) - set([fileName.strip('r.html.csv') for fileName in os.listdir(targetPath)])
     
-    #`Bad threshold ~= 10KB
-    target_bad = set([fileName.strip('.html') for fileName in os.listdir(targetPath) if os.path.getsize(targetPath + fileName) < 10000])
+    #'Bad threshold (kb)
+    target_bad = set([fileName.strip('r.html.csv') for fileName in os.listdir(targetPath) if os.path.getsize(targetPath + fileName) < threshold * 1000]) & set(targetList)
 
     return list(target_missing | target_bad)
 

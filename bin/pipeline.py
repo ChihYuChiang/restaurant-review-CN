@@ -7,15 +7,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import random
+import re
 import os
 import sys
 
-
-#--Add file output (log) to print
-#When developing, make False
-if True:
-    #Log each session in different file
-    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + round(time.time()), 'w'))
 
 #--Establish necessary folder structure
 utils.createFolders(settings.OUTPUT_PATH, settings.CITY_CODE)
@@ -25,6 +20,11 @@ utils.createFolders(settings.OUTPUT_PATH, settings.CITY_CODE)
 items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, settings.CITY_CODE)
 
 
+#--Add file output (log) to print
+#When developing, make False
+if True:
+    #Log each session in different file
+    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + str(round(time.time())), 'w'))
 
 
 
@@ -42,7 +42,7 @@ if True:
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
 
-    get.zones(zoneList[62:63], infinite=True)
+    get.zones(zoneList_problematic, infinite=True)
 
 
 
@@ -188,12 +188,23 @@ Check and identify missing and bad items
 #Section switch
 if False:
 
-    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, settings.CITY_CODE))
+    #--Shop
+    shopIds_problematic = utils.problematicResult(targetList=items.shopId, targetPath='{0}raw_{1}/review/'.format(settings.OUTPUT_PATH, settings.CITY_CODE), threshold=10)
 
     len(shopIds_problematic)
 
     #Filter the items with the problematic ids
     items_problematic = items[items.shopId.isin(shopIds_problematic)]
+
+
+    #--Zone list
+    zoneIds = [re.search('r(\d+)', zone).group(1) for zone in zoneList]
+    zoneIds_problematic = utils.problematicResult(targetList=zoneIds, targetPath='{0}raw_{1}/url/'.format(settings.OUTPUT_PATH, settings.CITY_CODE), threshold=2)
+
+    len(zoneIds_problematic)
+
+    #Recover urls from zoneIds
+    zoneList_problematic = ['http://www.dianping.com/search/category/8/10/r{}o10'.format(zoneId) for zoneId in zoneIds_problematic]
 
 
 
