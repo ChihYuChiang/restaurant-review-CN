@@ -24,7 +24,7 @@ items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, settin
 #When developing, make False
 if True:
     #Log each session in different file
-    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + str(round(time.time())), 'w'))
+    sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + str(round(time.time())) + '.log', 'w'))
 
 
 

@@ -6,7 +6,7 @@ General settings
 CITY_CODE = 'cd' #Target city bj / sh / cd / gz
 OUTPUT_PATH = '../data/'
 RETRY = 10 #How many times to retry when error in module
-LOGPATH_GENERAL = 'log/general.log'
+LOGPATH_GENERAL = 'log/general'
 
 #Collect review
 PAGE_LIMIT = 5 #How many review pages per restaurant to save
