@@ -22,7 +22,7 @@ items = utils.sourceItem(settings.OUTPUT_PATH, settings.REVIEW_THRESHOLD, settin
 
 #--Add file output (log) to print
 #When developing, make False
-if True:
+if False:
     #Log each session in different file
     sys.stdout = utils.DoubleOutputTarget(sys.stdout, open(settings.LOGPATH_GENERAL + '_' + str(round(time.time())) + '.log', 'w'))
 
@@ -37,7 +37,7 @@ Collect URL lists
 ------------------------------------------------------------
 '''
 #Section switch
-if True:
+if False:
 
     #Acquire restaurant list for each zone
     zoneList = list(pd.read_csv('{0}raw_{1}/url/{2}'.format(settings.OUTPUT_PATH, settings.CITY_CODE, settings.ZONELIST_FILE), header=None)[0])
@@ -204,7 +204,7 @@ if False:
     len(zoneIds_problematic)
 
     #Recover urls from zoneIds
-    zoneList_problematic = ['http://www.dianping.com/search/category/8/10/r{}o10'.format(zoneId) for zoneId in zoneIds_problematic]
+    zoneList_problematic = ['http://www.dianping.com/search/category/8/10/r{}d1o10'.format(zoneId) for zoneId in zoneIds_problematic]
 
 
 

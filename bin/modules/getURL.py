@@ -135,8 +135,10 @@ def zones(zoneList, infinite):
                         
                         #Update and restart cycle count
                         cycleCount += 1
-                        currentPage = j
-                        browser.quit()
+                        try:
+                            currentPage = j
+                            browser.quit()
+                        except: pass
                         print('{0} - restart {1}'.format(id, str(cycleCount - 1)))
                     else: raise
 

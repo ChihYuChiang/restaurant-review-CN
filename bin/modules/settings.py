@@ -13,8 +13,8 @@ PAGE_LIMIT = 5 #How many review pages per restaurant to save
 REVIEW_THRESHOLD = 200 #Filter for those shops with reviews more than the threshold
 
 #Get url
-ZONELIST_FILE = 'dianping_zone.csv'
-ZONE_PREFIX = ''
+ZONELIST_FILE = 'dianping_zone_2.csv'
+ZONE_PREFIX = 'r'
 
 
 
