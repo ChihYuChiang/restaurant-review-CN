@@ -123,7 +123,8 @@ if False:
                             
                             #Update restart cycle count
                             cycleCount += 1
-                            e.browser.quit()
+                            try: e.browser.quit()
+                            except: pass
                             print('{0} - restart {1}'.format(item.shopId, str(cycleCount - 1)))
 
                         else: raise
