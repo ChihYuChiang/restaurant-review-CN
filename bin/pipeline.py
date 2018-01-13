@@ -109,7 +109,8 @@ if False:
                 except Exception as e:
                     #If arrive retry cap, screenshot, decide if reset or break
                     if attempt == settings.RETRY:
-                        print(utils.errorScreenShot(e.browser))
+                        try: print(utils.errorScreenShot(e.browser))
+                        except: pass
 
                         #If infinite attempt
                         if infinite:
