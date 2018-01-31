@@ -214,9 +214,7 @@ def mainPage(shopId, curAttempt, **kwargs):
     #!!!
 
 
-    #--Targeting a main page url and navigate to that page
-    browser.get('http://www.dianping.com/')
-    time.sleep(random.uniform(3, 7))
+    #--Targeting a store page url and navigate to that page
     url = 'http://www.dianping.com/shop/' + str(shopId)
     browser.get(url)
 

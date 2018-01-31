@@ -5,7 +5,7 @@ General settings
 '''
 CITY_CODE = 'cd' #Target city bj / sh / cd / gz
 OUTPUT_PATH = '../data/'
-RETRY = 10 #How many times to retry when error in module
+RETRY = 5 #How many times to retry when error in module
 LOGPATH_GENERAL = 'log/general'
 
 #Collect review
@@ -28,7 +28,7 @@ ZONE_PREFIX = 'r'
 Browser
 ------------------------------------------------------------
 '''
-DOWNLOAD_TIMEOUT = 20 #Second
+DOWNLOAD_TIMEOUT = 30 #Second
 LOGPATH_PHANTOM = 'log/ghostdriver.log'
 USERAGENT_CANDIDATES = [#Acquire updated user agents from: https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',

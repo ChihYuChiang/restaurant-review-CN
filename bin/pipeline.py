@@ -74,7 +74,7 @@ Collect HTML by Selenium
 ------------------------------------------------------------
 '''
 #Section switch
-if False:
+if True:
     
     #--Function to perform collection
     def collectBySelenium(items, target, infinite):
@@ -156,7 +156,7 @@ if False:
 
     #--Perform collection
     #0 for mainPage, 1 for reviewPage
-    collectBySelenium(items, 0, infinite=False)
+    collectBySelenium(items[1800:2200], 0, infinite=True)
 
 
 
@@ -206,7 +206,7 @@ if False:
     len(zoneIds_problematic)
 
     #Recover urls from zoneIds
-    zoneList_problematic = ['http://www.dianping.com/search/category/8/10/r{}d1o10'.format(zoneId) for zoneId in zoneIds_problematic]
+    zoneList_problematic = ['http://www.dianping.com/search/category/8/10/r{}o10'.format(zoneId) for zoneId in zoneIds_problematic]
 
 
 
