@@ -4,7 +4,27 @@ import jieba
 import gensim
 from nltk.probability import FreqDist
 
-df_review = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=2000)
+#--To be moved to util
+def time(func):
+    import time
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        
+        #Call original function
+        funcOutput = func(*args, **kwargs)
+        
+        print("--- {0}: {1} seconds ---".format(func.__name__, time.time() - start_time))
+        if funcOutput is not None: return funcOutput
+    return wrapper
+
+
+
+
+
+
+
+
+df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=100)
 
 stopwords = [w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()]
 
@@ -47,14 +67,11 @@ class Df_review:
 df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=1000, maxChunk=3)
 
 #Concat sentences
-@time
-def test():
-    final = []
-    for r in df:
-        sentences = tokenize_sentence(r.Review)
-        final += [remove_stopword(tokenize_word(s)) for s in sentences]
-    print(final)
-test()
+final = []
+for r in df:
+    sentences = tokenize_sentence(r.Review)
+    final += [remove_stopword(tokenize_word(s)) for s in sentences]
+print(final)
 
 
 #Word count
@@ -67,18 +84,40 @@ def g(df):
 
 fdist = FreqDist(g(df))
 
+import dask.dataframe as dd
+from dask import compute, delayed
+import dask.multiprocessing
+
+df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=20000)
+
+@time
+def test0():
+    dds_review = dd.from_pandas(df_review_sp, npartitions=6)
+    # print(dds_review.npartitions)
+    # print(dds_review.get_partition(0).count().compute())
+
+    dds_review.Review.apply(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]).compute()
+
+@time
+def test1():
+    df_review_sp.Review.apply(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)])
 
 
-def time(func):
-    import time
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        
-        #Call original function
-        funcOutput = func(*args, **kwargs)
-        
-        print("--- %s seconds ---" % (time.time() - start_time))
-        if funcOutput is not None: return funcOutput
-    return wrapper
+@time
+def test2():
+    def process(x):
+        return [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]
+    values = [delayed(process)(x) for x in df_review_sp.Review]
 
-    
+    results = compute(*values, get=dask.multiprocessing.get)
+    print(results[0:100])
+
+import dask.bag as db
+
+@time
+def test3():
+    b = db.from_sequence(df_review_sp.Review, npartitions=2)
+    results = b.map(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]).compute()
+    print(results[:10])
+
+for i in np.arange(5): test3()
