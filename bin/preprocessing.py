@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import jieba
 import gensim
+from nltk.probability import FreqDist
 
 df_review = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=2000)
 
@@ -44,10 +45,21 @@ class Df_review:
                 yield r
             self.curChunk += 1
 
-df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=2, maxChunk=2)
+df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=10000, maxChunk=3)
 
+#Concat sentences
 final = []
 for r in df:
     sentences = tokenize_sentence(r.Review)
     final += [remove_stopword(tokenize_word(s)) for s in sentences]
 print(final)
+
+#Word count
+def g(df):
+    for r in df:
+        sentences = tokenize_sentence(r.Review)
+        for s in sentences:
+            words = remove_stopword(tokenize_word(s))
+            for w in words: yield w
+
+fdist = FreqDist(g(df))
