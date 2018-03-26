@@ -1,32 +1,14 @@
 import pandas as pd
 import numpy as np
+import re
+import operator
 import jieba
-import gensim
 from nltk.probability import FreqDist
 
-#--To be moved to util
-def time(func):
-    import time
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        
-        #Call original function
-        funcOutput = func(*args, **kwargs)
-        
-        print("--- {0}: {1} seconds ---".format(func.__name__, time.time() - start_time))
-        if funcOutput is not None: return funcOutput
-    return wrapper
 
+df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=100) + 
 
-
-
-
-
-
-
-df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=100)
-
-stopwords = [w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()]
+stopwords = list(set([w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()] + [w for l in open(r'..\ref\stopwords\哈工大停用词表.txt', encoding='GBK') for w in l.split()]))
 
 def tokenize_sentence(doc):
     punList = ',.!?:;~，。！？：；～'
@@ -40,16 +22,14 @@ def tokenize_sentence(doc):
     return sentences
 
 def tokenize_word(sentence):
+    sentence = re.sub('(\\xa0)+', ' ', sentence)
+    sentence = re.sub('\s+', ' ', sentence)
     words = jieba.cut(sentence)
     return words
 
 def remove_stopword(words):
     words = [w for w in words if w not in stopwords]
     return words
-
-
-model = gensim.models.Word2Vec(tt, min_count=1)
-
 
 class Df_review:
     def __init__(self, filePath, chunkSize, maxChunk):
@@ -59,65 +39,38 @@ class Df_review:
     def __iter__(self):
         for p in self.df:
             if self.curChunk == self.maxChunk: break
-            for _, r in p.iterrows():
-                yield r
+            print('Start processing chunk', p)
             self.curChunk += 1
+            yield from p.iterrows()
 
-
-df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=1000, maxChunk=3)
+df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=50000, maxChunk=None)
 
 #Concat sentences
 final = []
-for r in df:
+for _, r in df:
     sentences = tokenize_sentence(r.Review)
     final += [remove_stopword(tokenize_word(s)) for s in sentences]
 print(final)
 
-
 #Word count
 def g(df):
-    for r in df:
+    for _, r in df:
         sentences = tokenize_sentence(r.Review)
         for s in sentences:
             words = remove_stopword(tokenize_word(s))
             for w in words: yield w
-
 fdist = FreqDist(g(df))
-
-import dask.dataframe as dd
-from dask import compute, delayed
-import dask.multiprocessing
-
-df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=20000)
-
-@time
-def test0():
-    dds_review = dd.from_pandas(df_review_sp, npartitions=6)
-    # print(dds_review.npartitions)
-    # print(dds_review.get_partition(0).count().compute())
-
-    dds_review.Review.apply(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]).compute()
-
-@time
-def test1():
-    df_review_sp.Review.apply(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)])
+fdist.B() #Distinct word
+fdist.N() #Total word
+sorted(fdist.items(), key=operator.itemgetter(1), reverse=True)
 
 
-@time
-def test2():
-    def process(x):
-        return [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]
-    values = [delayed(process)(x) for x in df_review_sp.Review]
+def flatten(l):
+    import collections
+    for el in l:
+        if isinstance(el, collections.Sequence) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
 
-    results = compute(*values, get=dask.multiprocessing.get)
-    print(results[0:100])
-
-import dask.bag as db
-
-@time
-def test3():
-    b = db.from_sequence(df_review_sp.Review, npartitions=2)
-    results = b.map(lambda x: [remove_stopword(tokenize_word(s)) for s in tokenize_sentence(x)]).compute()
-    print(results[:10])
-
-for i in np.arange(5): test3()
+[i for i in flatten(final[:10])]
