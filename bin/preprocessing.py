@@ -8,7 +8,6 @@ df_review = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data
 
 stopwords = [w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()]
 
-
 def tokenize_sentence(doc):
     punList = ',.!?:;~，。！？：；～'
     senStart = 0
@@ -29,7 +28,6 @@ def remove_stopword(words):
     return words
 
 
-
 model = gensim.models.Word2Vec(tt, min_count=1)
 
 
@@ -45,14 +43,19 @@ class Df_review:
                 yield r
             self.curChunk += 1
 
-df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=10000, maxChunk=3)
+
+df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=1000, maxChunk=3)
 
 #Concat sentences
-final = []
-for r in df:
-    sentences = tokenize_sentence(r.Review)
-    final += [remove_stopword(tokenize_word(s)) for s in sentences]
-print(final)
+@time
+def test():
+    final = []
+    for r in df:
+        sentences = tokenize_sentence(r.Review)
+        final += [remove_stopword(tokenize_word(s)) for s in sentences]
+    print(final)
+test()
+
 
 #Word count
 def g(df):
@@ -63,3 +66,19 @@ def g(df):
             for w in words: yield w
 
 fdist = FreqDist(g(df))
+
+
+
+def time(func):
+    import time
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        
+        #Call original function
+        funcOutput = func(*args, **kwargs)
+        
+        print("--- %s seconds ---" % (time.time() - start_time))
+        if funcOutput is not None: return funcOutput
+    return wrapper
+
+    
