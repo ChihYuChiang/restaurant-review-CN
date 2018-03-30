@@ -6,11 +6,38 @@ import jieba
 import pickle
 from nltk.probability import FreqDist
 
+#Raw file path
+FILE_PATH = 'D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv'
 
-df_review_sp = pd.read_csv('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', nrows=100)
+#Sample df, for observation only
+df_review_sp = pd.read_csv(FILE_PATH, nrows=100)
 
+#Combine stopword lists and remove duplicates
 stopwords = list(set([w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()] + [w for l in open(r'..\ref\stopwords\哈工大停用词表.txt', encoding='GBK') for w in l.split()]))
 
+
+
+
+'''
+------------------------------------------------------------
+Utility functions
+------------------------------------------------------------
+'''
+#--Flatten list (recursive)
+#Parameter: l, a list
+#Return: a flattened list as a generator
+def flatten_list(l):
+    import collections
+    for el in l:
+        if isinstance(el, collections.Sequence) and not isinstance(el, (str, bytes)):
+            yield from flatten_list(el)
+        else:
+            yield el
+
+
+#--Separate sentences
+#Parameter: doc, a str
+#Return: a list of strs (sentences)
 def tokenize_sentence(doc):
     punList = ',.!?:;~，。！？：；～'
     senStart = 0
@@ -23,16 +50,28 @@ def tokenize_sentence(doc):
         if senStart < len(doc): sentences.append(doc[senStart: ])
     return sentences
 
+
+#--Tokenize words
+#Parameter: sentence, a str
+#Return: a list of words (terms)
 def tokenize_word(sentence):
     sentence = re.sub('(\\xa0)+', ' ', sentence)
     sentence = re.sub('\s+', ' ', sentence)
     words = jieba.cut(sentence)
     return words
 
-def remove_stopword(words):
+
+#--Remove stopwords
+#Parameters: words, a list of str; stopwords, a list of str
+#Return: a list of words with stopwords removed
+def remove_stopword(words, stopwords):
     words = [w for w in words if w not in stopwords]
     return words
 
+
+#--A df_review row generator
+#Parameters: chunkSize and maxChunk both int
+#The actual num of rows will be generated = chunkSize * maxChunk
 class Df_review:
     def __init__(self, filePath, chunkSize, maxChunk):
         self.df = pd.read_csv(filePath, chunksize=chunkSize)
@@ -45,40 +84,45 @@ class Df_review:
             self.curChunk += 1
             yield from p.iterrows()
 
-df = Df_review('D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv', chunkSize=50000, maxChunk=None)
 
-#Tokenize and preprocessing by doc
-final = []
+
+
+'''
+------------------------------------------------------------
+Preprocessing
+------------------------------------------------------------
+'''
+#--Tokenize and preprocessing by each doc
+#Df row generator
+df = Df_review(FILE_PATH, chunkSize=50000, maxChunk=None)
+
+#Preprocessing
+text_preprocessed = []
 for _, r in df:
     sentences = tokenize_sentence(r.Review)
-    final.append([remove_stopword(tokenize_word(s)) for s in sentences])
-print(final[:10])
+    text_preprocessed.append([remove_stopword(tokenize_word(s), stopwords=stopwords) for s in sentences])
 
-with open(r'..\data\tokenized.pickle', 'wb') as f:
-    pickle.dump(final, f)
+#Observe result
+print(text_preprocessed[:10])
 
-#Word count
-def g(df):
-    for _, r in df:
-        sentences = tokenize_sentence(r.Review)
-        for s in sentences:
-            words = remove_stopword(tokenize_word(s))
-            for w in words: yield w
-fdist = FreqDist(g(df))
-with open(r'..\data\fdist.pickle', 'wb') as f:
-    pickle.dump(fdist, f)
+#Save result
+with open(r'..\data\preprocessed.pickle', 'wb') as f:
+    pickle.dump(text_preprocessed, f)
+
+
+#--Word count (all docs)
+#Word frequency distribution by nltk
+fdist = FreqDist([i for i in flatten_list(text_preprocessed)])
+
+#Observe result
 print('Unique terms:', fdist.B())
 print('Total terms:', fdist.N())
-sorted(fdist.items(), key=operator.itemgetter(1), reverse=True)
+sorted(fdist.items(), key=operator.itemgetter(1), reverse=True) #Top terms
 
-fdist = FreqDist([i for i in flatten(final)])
+#Save result
+with open(r'..\data\fdist.pickle', 'wb') as f:
+    pickle.dump(fdist, f)
 
-def flatten(l):
-    import collections
-    for el in l:
-        if isinstance(el, collections.Sequence) and not isinstance(el, (str, bytes)):
-            yield from flatten(el)
-        else:
-            yield el
 
-[i for i in flatten(final)]
+
+#--Tf-idf is costly and has to be decided if implement
