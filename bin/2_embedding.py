@@ -1,5 +1,6 @@
 import bz2
 import numpy as np
+from collections import Counter
 
 
 '''
@@ -24,14 +25,14 @@ def readEmbedding(filePath):
             word_to_vec_map[curr_word] = np.array(line[1:], dtype=np.float64)
         
         i = 1
-        words_to_index = {}
-        index_to_words = {}
+        word_to_index = {}
+        index_to_word = {}
         for w in sorted(words):
-            words_to_index[w] = i
-            index_to_words[i] = w
+            word_to_index[w] = i
+            index_to_word[i] = w
             i = i + 1
 
-    return words_to_index, index_to_words, word_to_vec_map
+    return word_to_index, index_to_word, word_to_vec_map
 
 #Acquire mappings
 word_to_index, index_to_word, word_to_vec_map = readEmbedding('../data/weibo/sgns.weibo.word.bz2')
@@ -115,6 +116,25 @@ print ('{} -> {} :: {} -> {}'.format(*triad, analogy(*triad)))
 
 '''
 ------------------------------------------------------------
-Update embedding
+Update embedding by restaurant corpus
 ------------------------------------------------------------
 '''
+text_preprocessed = [['东方', '武功', '西方'], ['意大利', '罗马', '西班牙', '东方', '武功', '西方', '东方', '武功', '西方'], ['老公', '男人', '老婆', '中国', '台湾', '美国'], ['东方', '武功', '西方']]
+
+#--Word co-occurrence
+coOccurDic = Counter()
+WIN = 2
+
+for s in text_preprocessed:
+    for i in np.arange(len(s)):
+        for j in np.arange(i + 1, min(i + WIN + 1, len(s))):
+            try:
+                i_idx = word_to_index[s[i]]
+                j_idx = word_to_index[s[j]]
+            except: continue
+
+            if i_idx == j_idx: continue
+
+            coOccurDic[str(min(i_idx, j_idx)) + '-' + str(max(i_idx, j_idx))] += 1
+
+coOccurDic.keys()

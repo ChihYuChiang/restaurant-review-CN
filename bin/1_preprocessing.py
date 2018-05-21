@@ -20,6 +20,20 @@ stopwords = list(set([w for l in open(r'..\ref\stopwords\中文停用词库.txt'
 
 '''
 ------------------------------------------------------------
+Read processed data
+------------------------------------------------------------
+'''
+with open(r'..\data\preprocessed.pickle', 'rb') as f:
+    text_preprocessed = pickle.load(f)
+
+with open(r'..\data\fdist.pickle', 'rb') as f:
+    fdist = pickle.load(f)
+
+
+
+
+'''
+------------------------------------------------------------
 Utility functions
 ------------------------------------------------------------
 '''
@@ -106,6 +120,7 @@ for _, r in df:
 print(text_preprocessed[:10])
 
 #Save result
+#In binary, must be read in binary mode
 with open(r'..\data\preprocessed.pickle', 'wb') as f:
     pickle.dump(text_preprocessed, f)
 
@@ -122,7 +137,6 @@ sorted(fdist.items(), key=operator.itemgetter(1), reverse=True) #Top terms
 #Save result
 with open(r'..\data\fdist.pickle', 'wb') as f:
     pickle.dump(fdist, f)
-
 
 
 #--Tf-idf is costly and has to be decided if implement
