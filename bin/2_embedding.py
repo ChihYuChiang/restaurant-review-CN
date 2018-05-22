@@ -1,5 +1,6 @@
 import bz2
 import numpy as np
+import pickle
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from collections import Counter
@@ -126,29 +127,35 @@ print ('{} -> {} :: {} -> {}'.format(*triad, analogy(*triad)))
 
 '''
 ------------------------------------------------------------
-Update embedding by restaurant corpus
+Update embedding by restaurant corpus (GloVe)
 
 - https://nlp.stanford.edu/pubs/glove.pdf
 ------------------------------------------------------------
 '''
+#--Word co-occurrence
 with open(r'..\data\preprocessed.pickle', 'rb') as f:
     text_preprocessed = pickle.load(f)
 
-#--Word co-occurrence
 coOccurDic = Counter()
-WIN = 5
+WIN = 5 #The co-occurrence window
 
-for s in text_preprocessed:
-    for i in np.arange(len(s)):
-        for j in np.arange(i + 1, min(i + WIN + 1, len(s))):
-            try:
-                i_idx = word_to_index[s[i]]
-                j_idx = word_to_index[s[j]]
-            except: continue
+#Produce co-occurrence dict
+#Result format = word_id-word_id: n_co-occurrence
+for review in text_preprocessed:
+    for sentense in review:
+        for i in np.arange(len(sentense)):
+            for j in np.arange(i + 1, min(i + WIN + 1, len(sentense))):
+                try:
+                    i_idx = word_to_index[sentense[i]]
+                    j_idx = word_to_index[sentense[j]]
+                except: continue
 
-            if i_idx == j_idx: continue
+                if i_idx == j_idx: continue
 
-            coOccurDic[str(min(i_idx, j_idx)) + '-' + str(max(i_idx, j_idx))] += 1
+                coOccurDic[str(min(i_idx, j_idx)) + '-' + str(max(i_idx, j_idx))] += 1
+
+#Examine co-occurrence result (top 10)
+coOccurDic.most_common(10)
 
 
 #--Initialization
@@ -156,8 +163,8 @@ tf.reset_default_graph()
 
 #Parameters
 learningRate = 0.01
-nEpoch = 10
-x_max = coOccurDic.most_common(1)[0][1]
+nEpoch = 1
+x_max = coOccurDic.most_common(1)[0][1] #Number of the most common co-occurrence
 
 #Weighting function
 def wFunc(nCoOccur, cutoff):
@@ -197,10 +204,12 @@ with tf.Session() as sess:
     sess.run(init)
     
     for epoch in range(nEpoch):
+        #Get track of the cost of each epoch
         cost_epoch = 0
 
         for item in coOccurDic.items():
             _, cost_batch = sess.run([optimizer, cost],
+                #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
                 feed_dict={
                     x_ij: item[1],
                     w_ij: wFunc(item[1], x_max),
@@ -208,14 +217,16 @@ with tf.Session() as sess:
                     id_j: [int(str.split(item[0], '-')[1])]
                 }
             )
-            
+
+            #Tally the cost for each epoch
             cost_epoch += cost_batch
 
-        if epoch % 20 == 0:
+        if epoch % 1 == 0: #For text printing
             print ('Cost after epoch %i: %f' % (epoch, cost_epoch))
-        if epoch % 1 == 0:
+        if epoch % 1 == 0: #For graphing
             costs.append(cost_epoch)
 
+    #Graphing the change of the costs
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
     plt.xlabel('iterations (per epoch)')
@@ -223,4 +234,5 @@ with tf.Session() as sess:
     plt.show()
     plt.close()
 
+    #Output updated embedding matrix
     embedding_trained = sess.run(embedding)
