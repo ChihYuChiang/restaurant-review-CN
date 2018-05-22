@@ -1,6 +1,7 @@
 import bz2
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from collections import Counter
 
 
@@ -41,7 +42,7 @@ word_to_index, index_to_word, word_to_vec_map = readEmbedding('../data/weibo/sgn
 #Acquire numpy embedding matrix
 emb_m = len(word_to_index) + 1 #Number of words
 emb_n = 300 #Number of dimension
-emb_matrix = np.zeros((emb_m, emb_n))
+emb_matrix = np.zeros((emb_m, emb_n), dtype=np.float32)
 
 for word, index in word_to_index.items():
     emb_matrix[index, :] = word_to_vec_map[word]
@@ -133,9 +134,6 @@ Update embedding by restaurant corpus
 with open(r'..\data\preprocessed.pickle', 'rb') as f:
     text_preprocessed = pickle.load(f)
 
-text_preprocessed = [['东方', '武功', '西方'], ['意大利', '罗马', '西班牙', '东方', '武功', '西方', '东方', '武功', '西方'], ['老公', '男人', '老婆', '中国', '台湾', '美国'], ['东方', '武功', '西方']]
-
-
 #--Word co-occurrence
 coOccurDic = Counter()
 WIN = 5
@@ -155,9 +153,10 @@ for s in text_preprocessed:
 
 #--Initialization
 tf.reset_default_graph()
-learning_rate = 0.01
 
-x_nPair = len(coOccurDic)
+#Parameters
+learningRate = 0.01
+nEpoch = 10
 x_max = coOccurDic.most_common(1)[0][1]
 
 #Weighting function
@@ -167,8 +166,8 @@ def wFunc(nCoOccur, cutoff):
 
 #Variables to be learnt
 embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.constant(emb_matrix))
-b_i = tf.get_variable("b_i", [x_nPair, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
-b_j = tf.get_variable("b_j", [x_nPair, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
+b_i = tf.get_variable("b_i", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
+b_j = tf.get_variable("b_j", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 
 #Input and output
 x_ij = tf.placeholder(tf.float32, name='x_ij')
@@ -179,56 +178,49 @@ id_j = tf.placeholder(tf.int32, name='id_j')
 #Intermediate
 v_i = tf.nn.embedding_lookup(embedding, id_i, name='v_i')
 v_j = tf.nn.embedding_lookup(embedding, id_j, name='v_j')
-oh_i = tf.one_hot(indices=[id_i], depth=emb_m, dtype=tf.float32)
-oh_j = tf.one_hot(indices=[id_j], depth=emb_m, dtype=tf.float32)
+oh_i = tf.one_hot(indices=id_i, depth=emb_m, dtype=tf.float32)
+oh_j = tf.one_hot(indices=id_j, depth=emb_m, dtype=tf.float32)
 
 #Cost
 cost = w_ij * tf.square(tf.matmul(v_i, v_j, transpose_b=True) + tf.matmul(oh_i, b_i) + tf.matmul(oh_j, b_j) - tf.log(x_ij))
 
 #Optimizer and initializer
-optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learningRate).minimize(cost)
 init = tf.global_variables_initializer()
 
 
 #--Training
 costs = []
 with tf.Session() as sess:
-    temp = np.array([[1.0],[2.0],[3.0],[4.0],[5.0]])
-    test0 = tf.matmul(tf.one_hot(indices=[4], depth=5, dtype=tf.float64), temp)
-    test1 = tf.one_hot(indices=[4], depth=5, dtype=tf.float64)
-    test2 = tf.one_hot(indices=[3], depth=5, dtype=tf.float64)
-    test3 = tf.matmul(test1, test2, transpose_b=True)
-    test4 = np.log(5)
-    testp = sess.run(test4)
-    print(testp)
 
-
-
+    #Initialize vars
     sess.run(init)
-
+    
     for epoch in range(nEpoch):
-        _, epoch_cost = sess.run([optimizer, cost])
+        cost_epoch = 0
 
-        for pair in pairs:
-
-            #Select a minibatch
-            (minibatch_X, minibatch_Y) = minibatch
-            #IMPORTANT: The line that runs the graph on a minibatch.
-            #Run the session to execute the optimizer and the cost, the feedict should contain a minibatch for (X,Y).
-            _ , temp_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
+        for item in coOccurDic.items():
+            _, cost_batch = sess.run([optimizer, cost],
+                feed_dict={
+                    x_ij: item[1],
+                    w_ij: wFunc(item[1], x_max),
+                    id_i: [int(str.split(item[0], '-')[0])],
+                    id_j: [int(str.split(item[0], '-')[1])]
+                }
+            )
             
-            minibatch_cost += temp_cost / num_minibatches
+            cost_epoch += cost_batch
 
-            if epoch % 100 == 0:
-                print ('Cost after epoch %i: %f' % (epoch, epoch_cost))
-            if epoch % 5 == 0:
-                costs.append(epoch_cost)
+        if epoch % 20 == 0:
+            print ('Cost after epoch %i: %f' % (epoch, cost_epoch))
+        if epoch % 1 == 0:
+            costs.append(cost_epoch)
 
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
-    plt.xlabel('iterations (per fives)')
-    plt.title("Learning rate =" + str(learning_rate))
+    plt.xlabel('iterations (per epoch)')
+    plt.title("Learning rate =" + str(learningRate))
     plt.show()
     plt.close()
 
-    w_trained = sess.run(w)
+    embedding_trained = sess.run(embedding)
