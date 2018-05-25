@@ -5,6 +5,10 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from collections import Counter
 
+#Preprocessed restaurant distribution
+with open(r'..\data\fdist.pickle', 'rb') as f:
+    fdist = pickle.load(f)
+
 
 '''
 ------------------------------------------------------------
@@ -24,8 +28,12 @@ def readEmbedding(filePath):
         for line in f:
             line = line.strip().split()
             curr_word = line[0]
-            words.add(curr_word)
-            word_to_vec_map[curr_word] = np.array(line[1:], dtype=np.float64)
+
+            #Include only words in the restaurant corpus
+            if curr_word in fdist:
+                words.add(curr_word)
+                word_to_vec_map[curr_word] = np.array(line[1:], dtype=np.float64)
+            else: continue
         
         i = 1
         word_to_index = {}
@@ -163,8 +171,18 @@ tf.reset_default_graph()
 
 #Parameters
 learningRate = 0.01
-nEpoch = 1
+nBatch = 50
+nPairPerBatch = 5000
 x_max = coOccurDic.most_common(1)[0][1] #Number of the most common co-occurrence
+
+#Randomize the co-occur dict
+
+#Produce batches
+def genBatches(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
+batches = genBatches(coOccurDic, nPairPerBatch)
 
 #Weighting function
 def wFunc(nCoOccur, cutoff):
@@ -203,12 +221,12 @@ with tf.Session() as sess:
     #Initialize vars
     sess.run(init)
     
-    for epoch in range(nEpoch):
-        #Get track of the cost of each epoch
-        cost_epoch = 0
+    for batch in batches:
+        #Get track of the cost of each batch
+        cost_batch = 0
 
         for item in coOccurDic.items():
-            _, cost_batch = sess.run([optimizer, cost],
+            _, cost_item = sess.run([optimizer, cost],
                 #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
                 feed_dict={
                     x_ij: item[1],
@@ -218,18 +236,18 @@ with tf.Session() as sess:
                 }
             )
 
-            #Tally the cost for each epoch
-            cost_epoch += cost_batch
+            #Tally the cost for each batch
+            cost_batch += cost_batch
 
-        if epoch % 1 == 0: #For text printing
-            print ('Cost after epoch %i: %f' % (epoch, cost_epoch))
-        if epoch % 1 == 0: #For graphing
-            costs.append(cost_epoch)
+        if batch % 10 == 0: #For text printing
+            print ('Cost after batch %i: %f' % (batch, cost_batch))
+        if batch % 1 == 0: #For graphing
+            costs.append(cost_batch)
 
     #Graphing the change of the costs
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
-    plt.xlabel('iterations (per epoch)')
+    plt.xlabel('iterations (per batch)')
     plt.title("Learning rate =" + str(learningRate))
     plt.show()
     plt.close()
