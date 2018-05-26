@@ -168,21 +168,27 @@ coOccurDic.most_common(10)
 
 #--Initialization
 tf.reset_default_graph()
+embedding_trained = emb_matrix
 
 #Parameters
+np.random.seed(1)
 learningRate = 0.01
-nBatch = 50
-nPairPerBatch = 5000
+nBatch = 100
+nPairPerBatch = 500
+x_m = len(coOccurDic) #Number of training sample
 x_max = coOccurDic.most_common(1)[0][1] #Number of the most common co-occurrence
 
 #Randomize the co-occur dict
+permutation = list(np.random.permutation(x_m))
+temp = [item for item in coOccurDic.items()]
+coOccur_rand = [temp[idx] for idx in permutation]
 
 #Produce batches
 def genBatches(iterable, n=1):
     l = len(iterable)
     for ndx in range(0, l, n):
         yield iterable[ndx:min(ndx + n, l)]
-batches = genBatches(coOccurDic, nPairPerBatch)
+batches = genBatches(coOccur_rand, nPairPerBatch)
 
 #Weighting function
 def wFunc(nCoOccur, cutoff):
@@ -190,7 +196,7 @@ def wFunc(nCoOccur, cutoff):
     return w
 
 #Variables to be learnt
-embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.constant(emb_matrix))
+embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.constant(embedding_trained))
 b_i = tf.get_variable("b_i", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 b_j = tf.get_variable("b_j", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 
@@ -220,12 +226,12 @@ with tf.Session() as sess:
 
     #Initialize vars
     sess.run(init)
-    
-    for batch in batches:
+
+    for i in range(nBatch):
         #Get track of the cost of each batch
         cost_batch = 0
 
-        for item in coOccurDic.items():
+        for item in batches.__next__():
             _, cost_item = sess.run([optimizer, cost],
                 #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
                 feed_dict={
@@ -237,11 +243,11 @@ with tf.Session() as sess:
             )
 
             #Tally the cost for each batch
-            cost_batch += cost_batch
+            cost_batch += cost_item
 
-        if batch % 10 == 0: #For text printing
-            print ('Cost after batch %i: %f' % (batch, cost_batch))
-        if batch % 1 == 0: #For graphing
+        if i % 1 == 0: #For text printing
+            print ('Cost after batch %i: %f' % (i, cost_batch))
+        if i % 1 == 0: #For graphing
             costs.append(cost_batch)
 
     #Graphing the change of the costs
