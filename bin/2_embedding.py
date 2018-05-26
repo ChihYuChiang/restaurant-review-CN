@@ -4,6 +4,7 @@ import pickle
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from collections import Counter
+from itertools import islice
 
 #Preprocessed restaurant distribution
 with open(r'..\data\fdist.pickle', 'rb') as f:
@@ -168,11 +169,11 @@ coOccurDic.most_common(10)
 
 #--Initialization
 tf.reset_default_graph()
-embedding_trained = emb_matrix
 
 #Parameters
 np.random.seed(1)
-learningRate = 0.01
+learningRate = 0.001
+startBatch = 0
 nBatch = 100
 nPairPerBatch = 500
 x_m = len(coOccurDic) #Number of training sample
@@ -196,7 +197,7 @@ def wFunc(nCoOccur, cutoff):
     return w
 
 #Variables to be learnt
-embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.constant(embedding_trained))
+embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.constant(emb_matrix))
 b_i = tf.get_variable("b_i", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 b_j = tf.get_variable("b_j", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 
@@ -215,9 +216,10 @@ oh_j = tf.one_hot(indices=id_j, depth=emb_m, dtype=tf.float32)
 #Cost
 cost = w_ij * tf.square(tf.matmul(v_i, v_j, transpose_b=True) + tf.matmul(oh_i, b_i) + tf.matmul(oh_j, b_j) - tf.log(x_ij))
 
-#Optimizer and initializer
+#Optimizer, initializer, saver
 optimizer = tf.train.AdamOptimizer(learningRate).minimize(cost)
 init = tf.global_variables_initializer()
+saver = tf.train.Saver()
 
 
 #--Training
@@ -231,7 +233,7 @@ with tf.Session() as sess:
         #Get track of the cost of each batch
         cost_batch = 0
 
-        for item in batches.__next__():
+        for item in islice(batches, startBatch, startBatch + nBatch):
             _, cost_item = sess.run([optimizer, cost],
                 #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
                 feed_dict={
@@ -246,7 +248,7 @@ with tf.Session() as sess:
             cost_batch += cost_item
 
         if i % 1 == 0: #For text printing
-            print ('Cost after batch %i: %f' % (i, cost_batch))
+            print ('Cost after batch %i: %f' % (startBatch + i, cost_batch))
         if i % 1 == 0: #For graphing
             costs.append(cost_batch)
 
@@ -258,5 +260,6 @@ with tf.Session() as sess:
     plt.show()
     plt.close()
 
-    #Output updated embedding matrix
-    embedding_trained = sess.run(embedding)
+    #Checkpoint
+    saver.save(sess, 'emb-update', global_step=startBatch + nBatch)
+    
