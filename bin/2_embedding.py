@@ -173,8 +173,6 @@ tf.reset_default_graph()
 #Parameters
 np.random.seed(1)
 learningRate = 0.001
-startBatch = 0
-nBatch = 100
 nPairPerBatch = 500
 x_m = len(coOccurDic) #Number of training sample
 x_max = coOccurDic.most_common(1)[0][1] #Number of the most common co-occurrence
@@ -222,44 +220,60 @@ init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
 
+#--Model
+def updateEmb(startBatch, nBatch):
+    costs = []
+    with tf.Session() as sess:
+
+        #Initialize vars/restore from checkpoint
+        if startBatch == 0: sess.run(init)
+        else: saver.restore(sess, './../data/checkpoint/emb-update-{}'.format(startBatch))
+
+        for batch in islice(batches, startBatch, startBatch + nBatch):
+            #Get track of the cost of each batch
+            cost_batch = 0
+
+            for item in batch:
+                _, cost_item = sess.run([optimizer, cost],
+                    #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
+                    feed_dict={
+                        x_ij: item[1],
+                        w_ij: wFunc(item[1], x_max),
+                        id_i: [int(str.split(item[0], '-')[0])],
+                        id_j: [int(str.split(item[0], '-')[1])]
+                    }
+                )
+
+                #Tally the cost for each batch
+                cost_batch += cost_item
+
+            if i % 1 == 0: #For text printing
+                print ('Cost after batch %i: %f' % (startBatch + i, cost_batch))
+            if i % 1 == 0: #For graphing
+                costs.append(cost_batch)
+
+        #Graphing the change of the costs
+        plt.plot(np.squeeze(costs))
+        plt.ylabel('cost')
+        plt.xlabel('iterations (per batch)')
+        plt.title("Learning rate =" + str(learningRate))
+        plt.show()
+        plt.close()
+
+        #Checkpoint
+        saver.save(sess, './../data/checkpoint/emb-update', global_step=startBatch + nBatch)
+
+
 #--Training
-costs = []
+updateEmb(startBatch=0, nBatch=300)
+
+
+#--Output
+#Acquire output after certain number of global steps
+AFTER_STEP = 1
+
 with tf.Session() as sess:
+    saver.restore(sess, './../data/checkpoint/emb-update-{}'.format(AFTER_STEP))
 
-    #Initialize vars
-    sess.run(init)
-
-    for i in range(nBatch):
-        #Get track of the cost of each batch
-        cost_batch = 0
-
-        for item in islice(batches, startBatch, startBatch + nBatch):
-            _, cost_item = sess.run([optimizer, cost],
-                #Id must be a list, so the lookup results would be 2d instead of 1d and therefore can perform tf.matmul
-                feed_dict={
-                    x_ij: item[1],
-                    w_ij: wFunc(item[1], x_max),
-                    id_i: [int(str.split(item[0], '-')[0])],
-                    id_j: [int(str.split(item[0], '-')[1])]
-                }
-            )
-
-            #Tally the cost for each batch
-            cost_batch += cost_item
-
-        if i % 1 == 0: #For text printing
-            print ('Cost after batch %i: %f' % (startBatch + i, cost_batch))
-        if i % 1 == 0: #For graphing
-            costs.append(cost_batch)
-
-    #Graphing the change of the costs
-    plt.plot(np.squeeze(costs))
-    plt.ylabel('cost')
-    plt.xlabel('iterations (per batch)')
-    plt.title("Learning rate =" + str(learningRate))
-    plt.show()
-    plt.close()
-
-    #Checkpoint
-    saver.save(sess, 'emb-update', global_step=startBatch + nBatch)
-    
+    embedding_updated = sess.run(embedding)
+    print(embedding_updated)
