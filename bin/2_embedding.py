@@ -223,7 +223,7 @@ cost = w_ij * tf.square(tf.matmul(v_i, v_j, transpose_b=True) + tf.matmul(oh_i, 
 #Optimizer, initializer, saver
 optimizer = tf.train.AdamOptimizer(learningRate).minimize(cost)
 init = tf.global_variables_initializer()
-saver = tf.train.Saver()
+saver = tf.train.Saver(max_to_keep=1) #Keep only the last version (it's 500MB per version..)
 
 #Log in console
 print('Model initialized..')
@@ -274,7 +274,7 @@ def updateEmb(startBatch, nBatch):
 
 
 #--Training
-updateEmb(startBatch=0, nBatch=300)
+updateEmb(startBatch=300, nBatch=200)
 
 
 #--Output
