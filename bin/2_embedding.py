@@ -57,6 +57,9 @@ emb_matrix = np.zeros((emb_m, emb_n), dtype=np.float32)
 for word, index in word_to_index.items():
     emb_matrix[index, :] = word_to_vec_map[word]
 
+#Log in console
+print('Raw embedding read and processed..')
+
 
 
 
@@ -163,6 +166,9 @@ for review in text_preprocessed:
 
                 coOccurDic[str(min(i_idx, j_idx)) + '-' + str(max(i_idx, j_idx))] += 1
 
+#Log in console
+print('Co-occurrence dictionary created..')
+
 #Examine co-occurrence result (top 10)
 coOccurDic.most_common(10)
 
@@ -219,6 +225,9 @@ optimizer = tf.train.AdamOptimizer(learningRate).minimize(cost)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
+#Log in console
+print('Model initialized..')
+
 
 #--Model
 def updateEmb(startBatch, nBatch):
@@ -229,7 +238,7 @@ def updateEmb(startBatch, nBatch):
         if startBatch == 0: sess.run(init)
         else: saver.restore(sess, './../data/checkpoint/emb-update-{}'.format(startBatch))
 
-        for batch in islice(batches, startBatch, startBatch + nBatch):
+        for i, batch in enumerate(islice(batches, startBatch, startBatch + nBatch)):
             #Get track of the cost of each batch
             cost_batch = 0
 
