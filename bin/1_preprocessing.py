@@ -10,7 +10,7 @@ from nltk.probability import FreqDist
 FILE_PATH = 'D:\OneDrive\Projects\Independent\Restaurant Review\data\df_review_bj.csv'
 
 #Sample df, for observation only
-df_review_sp = pd.read_csv(FILE_PATH, nrows=100)
+df_review_sp = pd.read_csv(FILE_PATH, nrows=10)
 
 #Combine stopword lists and remove duplicates
 stopwords = list(set([w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()] + [w for l in open(r'..\ref\stopwords\哈工大停用词表.txt', encoding='GBK') for w in l.split()]))
@@ -24,7 +24,7 @@ Read processed data
 ------------------------------------------------------------
 '''
 with open(r'..\data\preprocessed.pickle', 'rb') as f:
-    text_preprocessed = pickle.load(f)
+    text_preprocessed, marker_shopId = pickle.load(f)
 
 with open(r'..\data\fdist.pickle', 'rb') as f:
     fdist = pickle.load(f)
@@ -104,25 +104,35 @@ class Df_review:
 '''
 ------------------------------------------------------------
 Preprocessing
+
+- Tf-idf is costly and has to be decided if implement
 ------------------------------------------------------------
 '''
 #--Tokenize and preprocessing by each doc
-#Df row generator
-df = Df_review(FILE_PATH, chunkSize=50000, maxChunk=None)
+def preprocess(filePath=FILE_PATH, title='all'):
 
-#Preprocessing
-text_preprocessed = []
-for _, r in df:
-    sentences = tokenize_sentence(r.Review)
-    text_preprocessed.append([remove_stopword(tokenize_word(s), stopwords=stopwords) for s in sentences])
+    #Df row generator
+    df = Df_review(filePath, chunkSize=50000, maxChunk=None)
 
-#Observe result
-print(text_preprocessed[:10])
+    #Preprocessing
+    text_preprocessed = []
+    marker_shopId = []
+    for _, r in df:
+        sentences = tokenize_sentence(r.Review)
+        text_preprocessed.append([remove_stopword(tokenize_word(s), stopwords=stopwords) for s in sentences])
+        marker_shopId.append(r.ShopID)
 
-#Save result
-#In binary, must be read in binary mode
-with open(r'..\data\preprocessed.pickle', 'wb') as f:
-    pickle.dump(text_preprocessed, f)
+    #Observe result
+    print(text_preprocessed[:10])
+
+    #Save result
+    #In binary, must be read in binary mode
+    with open(r'..\data\preprocessed_{}.pickle'.format(title), 'wb') as f:
+        pickle.dump((text_preprocessed, marker_shopId), f)
+
+    return text_preprocessed
+
+text_preprocessed = preprocess()
 
 
 #--Word count (all docs)
@@ -137,6 +147,3 @@ sorted(fdist.items(), key=operator.itemgetter(1), reverse=True) #Top terms
 #Save result
 with open(r'..\data\fdist.pickle', 'wb') as f:
     pickle.dump(fdist, f)
-
-
-#--Tf-idf is costly and has to be decided if implement

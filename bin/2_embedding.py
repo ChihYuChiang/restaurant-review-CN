@@ -145,8 +145,8 @@ Update embedding by restaurant corpus (GloVe)
 ------------------------------------------------------------
 '''
 #--Word co-occurrence
-with open(r'..\data\preprocessed.pickle', 'rb') as f:
-    text_preprocessed = pickle.load(f)
+with open(r'..\data\preprocessed_all.pickle', 'rb') as f:
+    text_preprocessed, marker_shopId = pickle.load(f)
 
 coOccurDic = Counter()
 WIN = 5 #The co-occurrence window
@@ -301,6 +301,14 @@ with tf.Session() as sess:
 Compare the updated embedding and the pretrained one
 ------------------------------------------------------------
 '''
+#--Save the processed embedding data
+with open(r'..\data\emb_raw.pickle', 'wb') as f:
+    pickle.dump(word_to_vec_map, f)
+with open(r'..\data\emb_updated.pickle', 'wb') as f:
+    pickle.dump(word_to_vec_map_updated, f)
+
+
+#--Comparison
 word_to_vec_map['西方'][0:10]
 word_to_vec_map_updated['西方'][0:10]
 
