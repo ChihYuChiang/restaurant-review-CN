@@ -101,7 +101,7 @@ print('cosine_similarity(france - paris, rome - italy) = ',cosineSimilarity(fran
 
 #--Analogy task
 #a is to b as c is to ____ 
-def analogy(word_a, word_b, word_c):
+def analogy(word_a, word_b, word_c, word_to_vec_map=word_to_vec_map):
     
     #Get the word embeddings v_a, v_b and v_c
     v_a, v_b, v_c = word_to_vec_map[word_a], word_to_vec_map[word_b], word_to_vec_map[word_c]
@@ -178,7 +178,7 @@ tf.reset_default_graph()
 
 #Parameters
 np.random.seed(1)
-learningRate = 0.001
+learningRate = 0.0001
 nPairPerBatch = 500
 x_m = len(coOccurDic) #Number of training sample
 x_max = coOccurDic.most_common(1)[0][1] #Number of the most common co-occurrence
@@ -205,7 +205,7 @@ embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.consta
 b_i = tf.get_variable("b_i", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 b_j = tf.get_variable("b_j", [emb_m, 1], dtype=tf.float32, initializer=tf.zeros_initializer())
 
-#Input and output
+#Input
 x_ij = tf.placeholder(tf.float32, name='x_ij')
 w_ij = tf.placeholder(tf.float32, name='w_ij')
 id_i = tf.placeholder(tf.int32, name='id_i')
@@ -257,7 +257,7 @@ def updateEmb(startBatch, nBatch):
                 cost_batch += cost_item
 
             if i % 1 == 0: #For text printing
-                print ('Cost after batch %i: %f' % (startBatch + i, cost_batch))
+                print('Cost after batch %i: %f' % (startBatch + i, cost_batch))
             if i % 1 == 0: #For graphing
                 costs.append(cost_batch)
 
@@ -274,15 +274,39 @@ def updateEmb(startBatch, nBatch):
 
 
 #--Training
-updateEmb(startBatch=300, nBatch=200)
+updateEmb(startBatch=4700, nBatch=300)
 
 
 #--Output
 #Acquire output after certain number of global steps
-AFTER_STEP = 1
+AFTER_STEP = 5000
 
 with tf.Session() as sess:
     saver.restore(sess, './../data/checkpoint/emb-update-{}'.format(AFTER_STEP))
 
-    embedding_updated = sess.run(embedding)
-    print(embedding_updated)
+    emb_matrix_updated = sess.run(embedding)
+
+    #Create updated word to vec mapping
+    word_to_vec_map_updated = {}
+    for word, index in word_to_index.items():
+        word_to_vec_map_updated[word] = emb_matrix_updated[index, :]
+
+    print('Updated embedding read..')
+
+
+
+
+'''
+------------------------------------------------------------
+Compare the updated embedding and the pretrained one
+------------------------------------------------------------
+'''
+word_to_vec_map['西方'][0:10]
+word_to_vec_map_updated['西方'][0:10]
+
+triad = ('意大利', '罗马', '西班牙')
+triad = ('中国', '台湾', '美国')
+triad = ('老公', '男人', '老婆')
+triad = ('东方', '武功', '西方')
+print ('(Raw embedding) {} -> {} :: {} -> {}'.format(*triad, analogy(*triad)))
+print ('(Updated embedding) {} -> {} :: {} -> {}'.format(*triad, analogy(*triad, word_to_vec_map_updated)))
