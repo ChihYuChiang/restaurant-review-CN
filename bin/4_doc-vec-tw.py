@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import re
 import jieba
 import pickle
+import sklearn.manifold
 from pprint import pprint
 from hanziconv import HanziConv
 
@@ -134,9 +136,9 @@ def getDocVec(text_preprocessed, word_to_vec_map):
     docVecs = np.stack(docVecs)
     print(docVecs.shape)
 
-    return docVecs
+    return docVecs, topics
 
-docVecs = getDocVec(text_preprocessed, word_to_vec_map)
+docVecs, topics = getDocVec(text_preprocessed, word_to_vec_map)
 
 
 
@@ -146,15 +148,44 @@ docVecs = getDocVec(text_preprocessed, word_to_vec_map)
 2D projection
 ------------------------------------------------------------
 '''
+#--Tste projection
+docProject_tste = sklearn.manifold.TSNE(n_components=2).fit_transform(docVecs)
 
 
+#--Chinese font in matplotlib
+#Matlplotlib accepts only ttf in windows fonts and package font
+#Copy ttf to C:\Users\XXX\Anaconda3\Lib\site-packages\matplotlib\mpl-data\fonts\ttf
+#Change file type from ttc to ttf
+#Remove cache in C:\Users\XXX\.matplotlib
+#Rebuild font list available
+#See available fonts
+import matplotlib.font_manager
+matplotlib.font_manager._rebuild()
+[f.name for f in matplotlib.font_manager.fontManager.ttflist]
 
+
+#--Plot
+#Set up the font
+plt.rc('font', family='Microsoft YaHei')
+
+#Base plot
+plt.scatter(docProject_tste[:, 0], docProject_tste[:, 1], alpha=1)
+
+#Choose some items to be labeled
+for i in range(0, 125, 5):
+    plt.annotate(topics[i], xy=(docProject_tste[i, 0], docProject_tste[i, 1]))
+
+#Show and close
+plt.show()
+plt.close()
 
 
 
 
 '''
 ------------------------------------------------------------
-Preference visualization
+Preference matrix
+
+- https://github.com/d3/d3-contour
 ------------------------------------------------------------
 '''
