@@ -2,13 +2,16 @@ import pandas as pd
 import numpy as np
 import re
 import jieba
+import pickle
 from pprint import pprint
 from hanziconv import HanziConv
 
 
+
+
 '''
 ------------------------------------------------------------
-
+Preprocessing
 ------------------------------------------------------------
 '''
 #--Simplified and traditional conversion demonstration
@@ -18,7 +21,7 @@ HanziConv.toTraditional('忧郁的天气')
 
 #--Initialization
 #Review df, sort by topic
-df_review = pd.read_csv(r'..\text.csv').sort_values('topic')
+df_review = pd.read_csv(r'..\data\person_rawtext.csv').sort_values('topic')
 
 #Combine stopword lists and remove duplicates
 #Also includes customized list
@@ -70,74 +73,88 @@ def preprocess(df=df_review):
         sentences = tokenize_sentence(HanziConv.toSimplified(str(r['text'])))
         sentences_preprocessed = [remove_stopword(tokenize_word(s), stopwords=stopwords) for s in sentences]
         sentences_preprocessed = [s for s in sentences_preprocessed if s] #Remove empty sentence
-        text_preprocessed.append((r['topic'], sentences_preprocessed))
+        if sentences_preprocessed: text_preprocessed.append((r['topic'], sentences_preprocessed)) #Remove empty review
 
     #Observe result
     pprint(text_preprocessed[:5])
 
-    return text_preprocessed, marker_topic
+    return text_preprocessed
 
-text_preprocessed, marker_topic = preprocess()
+text_preprocessed = preprocess()
 
 
 
 
 '''
 ------------------------------------------------------------
-
+Acquire doc vec
 ------------------------------------------------------------
 '''
 #--Preprocessed embedding data
-with open(r'..\data\emb_raw.pickle', 'rb') as f:
-    word_to_vec_map = pickle.load(f)
 with open(r'..\data\emb_updated.pickle', 'rb') as f:
-    word_to_vec_map_updated = pickle.load(f)
+    word_to_vec_map = pickle.load(f)
 
 
-#--Doc vec to summary vec
+#--Acquire doc vec
 #Average across words of a store to acquire store (doc) vec
-#Average across doc vecs to acquire summary vec
-def summaryVec(text_preprocessed, word_to_vec_map):
+def getDocVec(text_preprocessed, word_to_vec_map):
 
     #Vecs for all documents
     docVecs = []
     wordVecs = []
-    topics = []
     topicMarker = text_preprocessed[0][0]
+    topics = [topicMarker]
 
     #Loop over each review
     for item in text_preprocessed:
-                
-        #If same store, accumulate the wordVecs for that store
-        if item[0] == topicMarker:
 
-            #Acquire vec of each word
-            for s in item[1]:
-                for w in s:
-                    if w in word_to_vec_map.keys(): wordVecs.append(word_to_vec_map[w])
-
+        #If new store, accumulate the wordVecs for the previous store
+        if item[0] != topicMarker:
             #Update docVecs with all relevant wordVecs
-            docVecs.append(wordVecs)
-        
-        else:
+            wordVecs = np.array(wordVecs)
+            docVecs.append(np.mean(wordVecs, axis=0))
+
             #Reset wordVecs and update topic list
             wordVecs = []
             topics.append(item[0])
 
+        #Acquire vec of each word
+        for s in item[1]:
+            for w in s:
+                if w in word_to_vec_map.keys(): wordVecs.append(word_to_vec_map[w])
+
         #Update marker
         topicMarker = item[0]
 
-    #Create np array
-    docVecs = np.array(docVecs)
+    #Update docVecs with the last wordVecs
+    wordVecs = np.array(wordVecs)
+    docVecs.append(np.mean(wordVecs, axis=0))
+
+    #Turn into np array
+    docVecs = np.stack(docVecs)
     print(docVecs.shape)
 
-    #Average vec of all words and documents
-    summary = np.mean(docVecs, axis=1)
-    print(summary.shape)
+    return docVecs
 
-    return summary
+docVecs = getDocVec(text_preprocessed, word_to_vec_map)
 
 
-#--Summary vecs
-#All stores
-summary_all = summaryVec(text_preprocessed, word_to_vec_map)
+
+
+'''
+------------------------------------------------------------
+2D projection
+------------------------------------------------------------
+'''
+
+
+
+
+
+
+
+'''
+------------------------------------------------------------
+Preference visualization
+------------------------------------------------------------
+'''
