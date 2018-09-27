@@ -237,4 +237,4 @@ prefs['pref']['xin']  = getPrefMatrix('欣')
 prefs['pref']['po']   = getPrefMatrix('婆')
 prefs['pref']['nio']  = getPrefMatrix('牛')
 
-with open('../data/person_pref.json', 'w') as f: json.dump(prefs, f)
+with open('../data/person_pref.json', 'w', encoding='utf-8') as f: json.dump(prefs, f, ensure_ascii=False)

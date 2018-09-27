@@ -1,0 +1,18 @@
+{
+  "name": "pref",
+  "version": "0.0.1",
+  "main": "index.html",
+  "scripts": {    
+    "dev": "lite-server"
+  },
+  "dependencies": {
+    "bootstrap": "^4.0.0",
+    "d3": "^5.7.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.12.9"
+  },
+  "devDependencies": {
+    "lite-server": "^2.4.0"
+  }
+}
