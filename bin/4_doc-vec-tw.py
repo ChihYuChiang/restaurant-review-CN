@@ -4,9 +4,19 @@ import matplotlib.pyplot as plt
 import re
 import jieba
 import pickle
+import json
 import sklearn.manifold
 from pprint import pprint
 from hanziconv import HanziConv
+
+class UniversalContainer():
+
+    def listData(self):
+        data = [(item, getattr(self, item)) for item in dir(self) if not callable(getattr(self, item)) and not item.startswith("__")]
+        for item in data: print(item)
+
+    def listMethod(self):
+        print([item for item in dir(self) if callable(getattr(self, item)) and not item.startswith("__")])
 
 
 
@@ -67,7 +77,7 @@ def remove_stopword(words, stopwords):
 
 
 #--Tokenize and preprocessing by each doc
-def preprocess(df=df_review):
+def preprocess(df, stopwords=stopwords):
 
     #Preprocessing
     text_preprocessed = []
@@ -82,7 +92,7 @@ def preprocess(df=df_review):
 
     return text_preprocessed
 
-text_preprocessed = preprocess()
+text_preprocessed = preprocess(df_review)
 
 
 
@@ -172,7 +182,7 @@ plt.rc('font', family='Microsoft YaHei')
 plt.scatter(docProject_tste[:, 0], docProject_tste[:, 1], alpha=1)
 
 #Choose some items to be labeled
-for i in range(0, 125, 5):
+for i in range(0, 140, 5):
     plt.annotate(topics[i], xy=(docProject_tste[i, 0], docProject_tste[i, 1]))
 
 #Show and close
@@ -189,3 +199,42 @@ Preference matrix
 - https://github.com/d3/d3-contour
 ------------------------------------------------------------
 '''
+data_pref = UniversalContainer()
+
+#Pref data
+data_pref.df = pd.read_csv(r'..\data\person_rating.csv')
+data_pref.topic = topics
+
+#Processing the prefs
+data_pref.tsteDocProject = np.around(docProject_tste).astype('int')
+data_pref.tsteDocProjectL = data_pref.tsteDocProject.tolist()
+
+data_pref.tsteMax = np.max(data_pref.tsteDocProject, axis=0)
+data_pref.tsteMin = np.min(data_pref.tsteDocProject, axis=0)
+
+#Make prefs into contour matrix
+def getPrefMatrix(personId, data=data_pref):
+    prefs = []
+    for j in range(data.tsteMin[1] - 5, data.tsteMax[1] + 5 + 1): #5 as the margin
+        for i in range(data.tsteMin[0] - 5, data.tsteMax[0] + 5 + 1):
+            if [i, j] in data.tsteDocProjectL:
+                v = data.df[data.df.餐廳 == data.topic[data.tsteDocProjectL.index([i, j])]][personId].values[0]
+                if not pd.isnull(v): prefs.append(v)
+                else: prefs.append(0)
+            else: prefs.append(0)
+    return prefs
+
+#Output pref matrices
+prefs = {}
+prefs['topic']        = topics
+prefs['coordinate']   = data_pref.tsteDocProjectL
+prefs['pref']         = {}
+prefs['pref']['ba']   = getPrefMatrix('爸')
+prefs['pref']['ma']   = getPrefMatrix('媽')
+prefs['pref']['yu']   = getPrefMatrix('予')
+prefs['pref']['jian'] = getPrefMatrix('兼')
+prefs['pref']['xin']  = getPrefMatrix('欣')
+prefs['pref']['po']   = getPrefMatrix('婆')
+prefs['pref']['nio']  = getPrefMatrix('牛')
+
+with open('../data/person_pref.json', 'w') as f: json.dump(prefs, f)
