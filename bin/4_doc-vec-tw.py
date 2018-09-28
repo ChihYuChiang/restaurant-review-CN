@@ -212,7 +212,8 @@ data_pref.tsteDocProjectL = data_pref.tsteDocProject.tolist()
 data_pref.tsteMax = np.max(data_pref.tsteDocProject, axis=0)
 data_pref.tsteMin = np.min(data_pref.tsteDocProject, axis=0)
 
-#Make prefs into contour matrix
+
+#--Make prefs into contour matrix
 def getPrefMatrix(personId, data=data_pref):
     prefs = []
     for j in range(data.tsteMin[1] - 5, data.tsteMax[1] + 5 + 1): #5 as the margin
@@ -238,3 +239,12 @@ prefs['pref']['po']   = getPrefMatrix('婆')
 prefs['pref']['nio']  = getPrefMatrix('牛')
 
 with open('../data/person_pref.json', 'w', encoding='utf-8') as f: json.dump(prefs, f, ensure_ascii=False)
+
+
+#--Make pref density by jittering
+def jitter(x, y, base, scale):
+    x = x + np.random.normal(base, scale * base) - base
+    y = y + np.random.normal(base, scale * base) - base
+    return x, y
+
+jitter(100, -50, 100, 0.1)
