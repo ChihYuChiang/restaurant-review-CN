@@ -33,12 +33,12 @@ HanziConv.toTraditional('忧郁的天气')
 
 #--Initialization
 #Review df, sort by topic
-df_review = pd.read_csv(r'..\data\person_rawtext.csv').sort_values('topic')
+df_review = pd.read_csv(r'.\data\person_rawtext.csv').sort_values('topic')
 
 #Combine stopword lists and remove duplicates
 #Also includes customized list
 stopwords_customized = [' ', '地址', '原文', '网址', '官网', '电话', '店家', '资讯', '营业时间', '巷', '弄', '号', '楼', '年', '月', '每人', '平均', '价位', '餐厅', ]
-stopwords = list(set([w for l in open(r'..\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()] + [w for l in open(r'..\ref\stopwords\哈工大停用词表.txt', encoding='GBK') for w in l.split()] + stopwords_customized))
+stopwords = list(set([w for l in open(r'.\ref\stopwords\中文停用词库.txt', encoding='GB2312') for w in l.split()] + [w for l in open(r'.\ref\stopwords\哈工大停用词表.txt', encoding='GBK') for w in l.split()] + stopwords_customized))
 
 
 #--Separate sentences
@@ -103,7 +103,7 @@ Acquire doc vec
 ------------------------------------------------------------
 '''
 #--Preprocessed embedding data
-with open(r'..\data\emb_updated.pickle', 'rb') as f:
+with open(r'.\data\emb_updated.pickle', 'rb') as f:
     word_to_vec_map = pickle.load(f)
 
 
@@ -202,11 +202,11 @@ Preference matrix
 data_pref = UniversalContainer()
 
 #Pref data
-data_pref.df = pd.read_csv(r'..\data\person_rating.csv')
+data_pref.df = pd.read_csv(r'.\data\person_rating.csv')
 data_pref.topic = topics
 
 #Processing the prefs
-data_pref.tsteDocProject = np.around(docProject_tste).astype('int')
+data_pref.tsteDocProject = np.around(docProject_tste * 10).astype('int')
 data_pref.tsteDocProjectL = data_pref.tsteDocProject.tolist()
 
 data_pref.tsteMax = np.max(data_pref.tsteDocProject, axis=0)
@@ -238,13 +238,40 @@ prefs['pref']['xin']  = getPrefMatrix('欣')
 prefs['pref']['po']   = getPrefMatrix('婆')
 prefs['pref']['nio']  = getPrefMatrix('牛')
 
-with open('../data/person_pref.json', 'w', encoding='utf-8') as f: json.dump(prefs, f, ensure_ascii=False)
+with open('./data/person_pref.json', 'w', encoding='utf-8') as f: json.dump(prefs, f, ensure_ascii=False)
 
 
 #--Make pref density by jittering
-def jitter(x, y, base, scale):
+#Jitter base on range
+def jitter(x, y, base, scale=0.05):
     x = x + np.random.normal(base, scale * base) - base
     y = y + np.random.normal(base, scale * base) - base
-    return x, y
+    return [np.around(x, 2), np.around(y, 2)]
 
-jitter(100, -50, 100, 0.1)
+#Get pref point coordinates
+def getPrefPoints(personId, data=data_pref):
+    prefPoints = []
+    for i in range(len(data.tsteDocProjectL)):
+        v = data.df[data.df.餐廳 == data.topic[i]][personId].values[0]
+        if not pd.isnull(v):
+            prefPoints += [data.tsteDocProjectL[i]] * np.around(v * 10).astype('int')
+
+    for i in range(len(prefPoints)):
+        prefPoints[i] = jitter(*prefPoints[i], base=np.mean(data.tsteMax - data.tsteMin))
+
+    return prefPoints
+
+#Output pref points
+prefPoints = {}
+prefPoints['topic']         = topics
+prefPoints['coordinate']    = data_pref.tsteDocProjectL
+prefPoints['point']         = {}
+prefPoints['point']['ba']   = getPrefPoints('爸')
+prefPoints['point']['ma']   = getPrefPoints('媽')
+prefPoints['point']['yu']   = getPrefPoints('予')
+prefPoints['point']['jian'] = getPrefPoints('兼')
+prefPoints['point']['xin']  = getPrefPoints('欣')
+prefPoints['point']['po']   = getPrefPoints('婆')
+prefPoints['point']['nio']  = getPrefPoints('牛')
+
+with open('./data/person_prefpoint.json', 'w', encoding='utf-8') as f: json.dump(prefPoints, f, ensure_ascii=False)
