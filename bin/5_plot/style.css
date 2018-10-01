@@ -1,9 +1,9 @@
 .tooltip {
   position: absolute;
   pointer-events: none;
-    background-color: #FFFFFF;
-    border-radius: 2px;
-    padding: 2px 5px
+  background-color: #ffffff;
+  border-radius: 2px;
+  padding: 2px 5px;
 }
 
 #pref-btn {
@@ -17,9 +17,9 @@
 }
 
 #icon-cookie {
-    color: #FFB27D;
+  color: #ffb27d;
 }
 
 #plot-title {
-    font-weight: 400;
+  font-weight: 400;
 }

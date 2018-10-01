@@ -6,10 +6,13 @@ var canvas = {
   width: 960,
   height: 500,
   color_contour: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
-  color_scatter: d3.schemeAccent
+  color_scatter: d3.schemeAccent,
+  translate_x: 0,
+  translate_y: 0,
+  scale: 1
 };
-canvas.transform_x = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.width]);
-canvas.transform_y = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.height]);
+canvas.xScale = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.width]);
+canvas.yScale = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.height]);
 
 //Setup root element
 let root = d3
@@ -33,6 +36,22 @@ let root = d3
     .attr("y", canvas.height / 4)
     .attr("text-anchor", "left")
     .style("font-size", "16px");
+  root.insert("rect")
+    .classed("click-listener", true)
+    .attr('width', canvas.width)
+    .attr('height', canvas.height)
+    .style('opacity', 0)
+    .style("visibility", "hidden")
+    .on("click", () => {
+      root.select(".click-listener").style("visibility", "hidden");
+      root.selectAll("g")
+        .transition()
+        .duration(1000)
+        .attr("transform", 'translate(' + 0 + ', ' + 0 + ')scale(' + 1 + ')');
+      canvas.translate_x = 0;
+      canvas.translate_y = 0;
+      canvas.scale = 1;
+    });
 
 //Get data and create initial plot
 d3.json("./person_prefpoint.json").then(result => {
@@ -60,8 +79,8 @@ function plot(targetName) {
     data: data.point[targetName],
     contour: d3
       .contourDensity()
-      .x(d => canvas.transform_x(d[0]))
-      .y(d => canvas.transform_y(d[1]))
+      .x(d => canvas.xScale(d[0]))
+      .y(d => canvas.yScale(d[1]))
       .size([canvas.width, canvas.height])
       .bandwidth(10)
       .thresholds(8)
@@ -110,15 +129,16 @@ function plot(targetName) {
     .enter()
     .append("circle")
     .attr("r", 2)
-    .attr("cx", d => canvas.transform_x(d[0]))
-    .attr("cy", d => canvas.transform_y(d[1]))
+    .attr("cx", d => canvas.xScale(d[0]))
+    .attr("cy", d => canvas.yScale(d[1]))
     .style("fill", canvas.color_scatter[7])
     .style("stroke", "#FFFFFF")
     .on("mouseover", (d, i, nodes) => {
       d3.select(nodes[i])
+        .style("cursor", "pointer")
         .transition()
         .duration(200)
-        .style("r", 4)
+        .style("r", 6)
         .style("fill", canvas.color_scatter[2]);
       d3.select("#scatter-tooltip")
         .transition()
@@ -148,6 +168,18 @@ function plot(targetName) {
           .style("visibility", "hidden");
       });
     })
+    .on("click", () => {
+      let [tx, ty] = d3.mouse(root.node());
+      canvas.scale = 3;
+      canvas.translate_x = (canvas.width/2 - tx) * canvas.scale - canvas.width/2 * (canvas.scale - 1) ;
+      canvas.translate_y = (canvas.height/2 - ty) * canvas.scale - canvas.height/2 * (canvas.scale - 1);
+      root.selectAll("g")
+        .transition()
+        .duration(1000)
+        .attr("transform", 'translate(' + canvas.translate_x + ', ' + canvas.translate_y + ')scale(' + canvas.scale + ')');
+      root.select(".click-listener")
+        .style("visibility", "visible")
+    });
 }
 
 $("#target-jian").click(() => {
