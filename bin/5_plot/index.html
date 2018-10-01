@@ -2,26 +2,29 @@
 
 <head>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 </head>
 
 <body>
     <div class="container">
-        <div class="mt-5 d-flex">
-            <span class="align-self-center">Restaurant preference contour</span>
-            <div class="btn-group ml-3" role="group">
-                <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
-                    Who's Preference?
-                </button>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#" id="target-yu">Yu</a>
-                    <a class="dropdown-item" href="#" id="target-jian">James</a>
-                </div>
-            </div>
+        <div class="mt-5">
+            <h4 class="align-self-center">
+                <i class="fas fa-cookie-bite"></i>
+                Restaurant Preference Contour
+            </h4>
         </div>
         <div class="row mt-2">
-            <div class="col-12">
+            <div class="col-12" style="position:relative">
                 <svg></svg>
+                <div class="btn-group" role="group" style="position:absolute; right:200px; top:10px">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                        Who's Preference?
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" id="target-yu">Yu</a>
+                        <a class="dropdown-item" href="#" id="target-jian">James</a>
+                    </div>
+                </div>                
             </div>
         </div>
     </div>

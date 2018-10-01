@@ -1,26 +1,38 @@
 /* jshint esversion: 6 */
 
 //--Initialize data and make the initial plot
-//Get root element
-const canvas = {
-    width: 960,
-    height: 500,
-    color: d3.schemePaired
-  };
+//Shared info
+var canvas = {
+  width: 960,
+  height: 500,
+  color_contour: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
+  color_scatter: d3.schemeAccent
+};
+canvas.transform_x = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.width]);
+canvas.transform_y = d3.scaleLinear().domain([-100, 100]).rangeRound([0, canvas.height]);
+
+//Setup root element
 let root = d3
     .select("svg")
     .attr("width", canvas.width)
     .attr("height", canvas.height)
-    .style("box-shadow", "1px 2px 4px #BFBFBF");
+    .style("box-shadow", "1px 2px 4px #BFBFBF")
+    .style("background-color", "#FCFCFC");
   root
-    .insert("g")
+    .append("g")
     .classed("contour-plot", true)
     .attr("stroke", "#FFFFFF")
     .attr("stroke-width", 0.5)
     .attr("stroke-linejoin", "round");
   root
-    .insert("g")
+    .append("g")
     .classed("scatter-plot", true);
+  root
+    .append("text")
+    .attr("x", canvas.width / 8)
+    .attr("y", canvas.height / 4)
+    .attr("text-anchor", "left")
+    .style("font-size", "16px")
 
 //Get data and create initial plot
 d3.json("./person_prefpoint.json").then(result => {
@@ -34,31 +46,22 @@ function plot(targetName) {
 
   //Title
   root
-    .append("text")
-    .attr("x", canvas.width / 8)
-    .attr("y", canvas.height / 4)
-    .attr("text-anchor", "left")
-    .style("font-size", "16px")
-    .text(targetName + "'s Graph");
+    .select("text")
+    .text(targetName + "'s Graph")
+    .attr("opacity", 0)
+    .transition()
+    .duration(300)
+    .attr("opacity", 1);
 
 
   //--Contour plot
   //Initialization
   let contourPlot = {
     data: data.point[targetName],
-    color: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
-    x: d3
-      .scaleLinear()
-      .domain([-100, 100])
-      .rangeRound([0, canvas.width]),
-    y: d3
-      .scaleLinear()
-      .domain([-100, 100])
-      .rangeRound([0, canvas.height]),
     contour: d3
       .contourDensity()
-      .x(d => contourPlot.x(d[0]))
-      .y(d => contourPlot.y(d[1]))
+      .x(d => canvas.transform_x(d[0]))
+      .y(d => canvas.transform_y(d[1]))
       .size([canvas.width, canvas.height])
       .bandwidth(10)
       .thresholds(8)
@@ -73,7 +76,7 @@ function plot(targetName) {
   geoPaths
     .enter()
     .append("path")
-    .attr("fill", d => contourPlot.color(d.value))
+    .attr("fill", d => canvas.color_contour(d.value))
     .attr("d", d3.geoPath())
     .style("opacity", 0)
     .transition()
@@ -97,15 +100,6 @@ function plot(targetName) {
   //Initialization
   let scatterPlot = {
     data: data.coordinate,
-    color: d3.schemeAccent,
-    x: d3
-      .scaleLinear()
-      .domain([-100, 100])
-      .rangeRound([0, canvas.width]),
-    y: d3
-      .scaleLinear()
-      .domain([-100, 100])
-      .rangeRound([0, canvas.height])
   };
 
   //Implement
@@ -116,16 +110,16 @@ function plot(targetName) {
     .enter()
     .append("circle")
     .attr("r", 2)
-    .attr("cx", d => scatterPlot.x(d[0]))
-    .attr("cy", d => scatterPlot.y(d[1]))
-    .style("fill", scatterPlot.color[7])
+    .attr("cx", d => canvas.transform_x(d[0]))
+    .attr("cy", d => canvas.transform_y(d[1]))
+    .style("fill", canvas.color_scatter[7])
     .style("stroke", "#FFFFFF")
     .on("mouseover", (d, i, nodes) => {
       d3.select(nodes[i])
         .transition()
         .duration(200)
         .style("r", 4)
-        .style("fill", scatterPlot.color[2]);
+        .style("fill", canvas.color_scatter[2]);
       d3.select("#scatter-tooltip")
         .transition()
         .duration(200)
@@ -141,7 +135,7 @@ function plot(targetName) {
         .transition()
         .duration(500)
         .style("r", 2)
-        .style("fill", scatterPlot.color[7]);
+        .style("fill", canvas.color_scatter[7]);
       let p = new Promise((resolve, reject) => {
         d3.select("#scatter-tooltip")
           .transition()
