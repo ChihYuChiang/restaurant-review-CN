@@ -1,0 +1,25 @@
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+    background-color: #FFFFFF;
+    border-radius: 2px;
+    padding: 2px 5px
+}
+
+#pref-btn {
+  position: absolute;
+  right: 200px;
+  top: 10px;
+}
+
+#canvas {
+  position: relative;
+}
+
+#icon-cookie {
+    color: #FFB27D;
+}
+
+#plot-title {
+    font-weight: 400;
+}

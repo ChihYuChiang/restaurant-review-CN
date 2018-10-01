@@ -32,7 +32,7 @@ let root = d3
     .attr("x", canvas.width / 8)
     .attr("y", canvas.height / 4)
     .attr("text-anchor", "left")
-    .style("font-size", "16px")
+    .style("font-size", "16px");
 
 //Get data and create initial plot
 d3.json("./person_prefpoint.json").then(result => {
@@ -45,13 +45,13 @@ d3.json("./person_prefpoint.json").then(result => {
 function plot(targetName) {
 
   //Title
-  root
-    .select("text")
-    .text(targetName + "'s Graph")
-    .attr("opacity", 0)
+  d3
+    .select("#plot-title")
+    .text(" - " + targetName + "'s Graph")
+    .style("opacity", 0)
     .transition()
-    .duration(300)
-    .attr("opacity", 1);
+    .duration(600)
+    .style("opacity", 1);
 
 
   //--Contour plot
@@ -147,7 +147,7 @@ function plot(targetName) {
         d3.select("#scatter-tooltip")
           .style("visibility", "hidden");
       });
-    });
+    })
 }
 
 $("#target-jian").click(() => {
