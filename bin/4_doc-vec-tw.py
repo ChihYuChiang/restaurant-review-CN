@@ -282,5 +282,5 @@ prefPoints['point']['xin']  = getPrefPoints('欣')
 
 with open('../data/person_prefpoint.json', 'w', encoding='utf-8') as f: 
     json.dump(prefPoints, f, ensure_ascii=False)
-with open('5_plot/person_prefpoint.json', 'w', encoding='utf-8') as f:
+with open('../docs/person_prefpoint.json', 'w', encoding='utf-8') as f:
     json.dump(prefPoints, f, ensure_ascii=False)
