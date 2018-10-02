@@ -1,3 +1,7 @@
+.modal-content {
+    border: none;
+}
+
 .tooltip {
   position: absolute;
   pointer-events: none;
@@ -7,22 +11,33 @@
   font-family: Tahoma, Arial, Helvetica, "Microsoft YaHei New", "Microsoft Yahei", "微软雅黑", 宋体, SimSun, STXihei, "华文细黑", sans-serif;
 }
 
-#pref-btn {
+.icon-cookie {
+  color: #803A0A;
+}
+
+.icon-star {
+  color: #FFD92F;
+}
+
+#btn-pref {
   position: absolute;
   right: 200px;
   top: 10px;
 }
 
+#btn-info {
+    position: absolute;
+    right: 380px;
+    top: 17px;
+    color: #6C757D;
+}
+#btn-info:hover {
+    color: #5A6268;
+    cursor: pointer;
+}
+
 #canvas {
   position: relative;
-}
-
-#icon-cookie {
-  color: #ffb27d;
-}
-
-.icon-star {
-  color: #FFD92F;
 }
 
 #plot-title {

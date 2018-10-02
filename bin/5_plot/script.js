@@ -7,6 +7,7 @@ var canvas = {
   height: 500,
   color_contour: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
   color_scatter: d3.schemeAccent,
+  color_theme: d3.schemeCategory10,
   scale_x: d3.scaleLinear(),
   scale_y: d3.scaleLinear(),
   translate_x: 0,
@@ -70,6 +71,8 @@ function plot(targetName) {
         Tip.hideAll();
       });
       p.then(() => {
+        d3.select("#btn-pref").style("visibility", "visible");
+        d3.select("#btn-info").style("visibility", "visible");
         root.select(".click-listener").style("visibility", "hidden");
       });
       canvas.translate_x = 0;
@@ -80,7 +83,7 @@ function plot(targetName) {
 
   //--Title
   d3.select("#plot-title")
-    .text(" - " + targetName[0].toUpperCase() + targetName.slice(1, targetName.length) + "'s Graph")
+    .text(targetName[0].toUpperCase() + targetName.slice(1, targetName.length) + "'s Graph")
     .style("opacity", 0)
     .transition()
     .duration(600)
@@ -189,8 +192,9 @@ function plot(targetName) {
       scatterPlot.tip.main.hide();
     })
     .on("click", (d, i, nodes) => {
-      d3.select(nodes[i])
-        .style("stroke", canvas.color_scatter[5]);
+      d3.select("#btn-pref").style("visibility", "hidden");
+      d3.select("#btn-info").style("visibility", "hidden");
+      d3.select(nodes[i]).style("stroke", canvas.color_theme[1]);
       let [tx, ty] = [d3.select(nodes[i]).attr("cx"), d3.select(nodes[i]).attr("cy")];
       canvas.scale = 5;
       [canvas.translate_x, canvas.translate_y] = scatterPlot.getTranslate(tx, ty);
@@ -234,7 +238,8 @@ class Tip {
     d3.selectAll(".tooltip")
       .transition()
       .duration(200)
-      .style("opacity", "0.9");
+      .style("opacity", "0.9")
+      .style("background-color", "#FFFFFF");
   }
   static hideAll() {
     d3.selectAll(".tooltip")
@@ -243,17 +248,18 @@ class Tip {
       .style("opacity", "0");
   }
   
-  show() {
+  show(bgColor="#FFFFFF") {
     d3.select(this.id)
       .transition()
       .duration(200)
-      .style("opacity", "0.9");
+      .style("opacity", "0.9")
+      .style("background-color", bgColor);
   }
   hide() {
     d3.select(this.id)
       .transition()
       .duration(500)
-      .style("opacity", "0");
+      .style("opacity", "0")
   }
   setContent8MoveTo(content, coordinate) {
     d3.select(this.id)
