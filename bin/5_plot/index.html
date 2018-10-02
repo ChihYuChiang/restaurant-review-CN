@@ -12,10 +12,30 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Instruction - Restaurant Preference Map</h5>
+                    <h5 class="modal-title">Restaurant Preference Map</h5>
                 </div>
                 <div class="modal-body">
-                    ...
+                    <p>
+                        This is a side project of <a href="mailto:chihyuchiang@uchicago.edu">Chih-Yu Chiang</a>.<br>
+                        It aims to visualize individuals' preference toward popular restaurants in Taipei.
+                    </p>
+                    <h6>Instruction</h6>
+                    <ul>
+                        <li>A dot is a restaurant.</li>
+                        <li>The proximity in the map shows the restaurants' similarity regarding their dining experience.</li>
+                        <li>The deeper the color, the higher the estimated individual preference.</li>
+                        <li><i class="fas fa-star icon-star"></i> in the tips are the individual's actual preference.</li>
+                        <li>Click the restaurant to zoom in and get the dining recommendation from its 5 most similar restaurant buddies.</li>
+                    </ul>
+                    <h6>Data</h6>
+                    <ul>
+                        <li>The dining-experience space is created on 5-million restaurant review articles scraped from dianping.com and
+                            pixnet.net.</li>
+                        <li>These articles are used to update a GloVe embedding based on a 100M-token Weibo corpus.</li>
+                        <li>The embedding is projected onto a 2D space via the t-sne algorithm. Upon the projection, 150 popular restaurants in Taipei were plotted.</li>
+                        <li>Individuals report their preference toward 100 of these popular restaurants. Based on that, an overall preference density is estimated.</li>
+                        <li>The visualization is created via D3.js.</li>
+                    </ul>
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>

@@ -277,3 +277,11 @@ d3.select("#target-jian")
   .on("click", () => {plot("jian");});
 d3.select("#target-xin")
   .on("click", () => {plot("xin");});
+
+
+//--Open instruction by default
+$('document').ready(() => {
+  setTimeout(() => {
+    $('#info').modal('show');
+  }, 1500);
+})
