@@ -159,10 +159,6 @@ docVecs, topics = getDocVec(text_preprocessed, word_to_vec_map)
 2D projection
 ------------------------------------------------------------
 '''
-#--Tste projection
-docProject_tste = sklearn.manifold.TSNE(n_components=2).fit_transform(docVecs)
-
-
 #--Chinese font in matplotlib
 #Matlplotlib accepts only ttf in windows fonts and package font
 #Copy ttf to C:\Users\XXX\Anaconda3\Lib\site-packages\matplotlib\mpl-data\fonts\ttf
@@ -173,6 +169,10 @@ docProject_tste = sklearn.manifold.TSNE(n_components=2).fit_transform(docVecs)
 import matplotlib.font_manager
 matplotlib.font_manager._rebuild()
 [f.name for f in matplotlib.font_manager.fontManager.ttflist]
+
+
+#--Tste projection
+docProject_tste = sklearn.manifold.TSNE(n_components=2).fit_transform(docVecs)
 
 
 #--Plot
