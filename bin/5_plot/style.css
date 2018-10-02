@@ -2,8 +2,9 @@
   position: absolute;
   pointer-events: none;
   background-color: #ffffff;
-  border-radius: 2px;
+  border-radius: 3px;
   padding: 2px 5px;
+  font-family: Tahoma, Arial, Helvetica, "Microsoft YaHei New", "Microsoft Yahei", "微软雅黑", 宋体, SimSun, STXihei, "华文细黑", sans-serif;
 }
 
 #pref-btn {
@@ -18,6 +19,10 @@
 
 #icon-cookie {
   color: #ffb27d;
+}
+
+.icon-star {
+  color: #FFD92F;
 }
 
 #plot-title {

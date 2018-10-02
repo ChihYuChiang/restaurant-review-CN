@@ -268,7 +268,7 @@ def getPrefPoints(personId, data=data_pref):
 prefPoints = {}
 prefPoints['topic']         = data_pref.topic
 prefPoints['coordinate']    = data_pref.tsteDocProjectL
-prefPoints['coordinateRange'] = np.stack([np.min(data_pref.tsteDocProject, axis=0), np.max(data_pref.tsteDocProject, axis=0)]).transpose().tolist()
+prefPoints['coordinateRange'] = np.stack([data_pref.tsteMin - (data_pref.tsteMax - data_pref.tsteMin) * 0.1, data_pref.tsteMax + (data_pref.tsteMax - data_pref.tsteMin) * 0.1]).transpose().tolist()
 prefPoints['closestneighbor'] = getClosestNeighbors(topN=5)
 prefPoints['pref']         = {}
 prefPoints['pref']['yu']   = getPref('予')
@@ -280,4 +280,7 @@ prefPoints['point']['yu']   = getPrefPoints('予')
 prefPoints['point']['jian'] = getPrefPoints('兼')
 prefPoints['point']['xin']  = getPrefPoints('欣')
 
-with open('../data/person_prefpoint.json', 'w', encoding='utf-8') as f: json.dump(prefPoints, f, ensure_ascii=False)
+with open('../data/person_prefpoint.json', 'w', encoding='utf-8') as f: 
+    json.dump(prefPoints, f, ensure_ascii=False)
+with open('5_plot/person_prefpoint.json', 'w', encoding='utf-8') as f:
+    json.dump(prefPoints, f, ensure_ascii=False)
