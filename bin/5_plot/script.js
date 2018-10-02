@@ -166,6 +166,7 @@ function plot(targetName) {
     .attr("cy", d => canvas.scale_y(d[1]))
     .style("fill", canvas.color_scatter[7])
     .style("stroke", "#FFFFFF")
+    .merge(circles)
     .on("mouseover", (d, i, nodes) => {
       let [tx, ty] = d3.mouse(root.node());
       d3.select(nodes[i])
