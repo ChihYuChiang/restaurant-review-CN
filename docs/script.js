@@ -98,8 +98,8 @@ function plot(targetName) {
       .x(d => canvas.scale_x(d[0]))
       .y(d => canvas.scale_y(d[1]))
       .size([canvas.width, canvas.height])
-      .bandwidth(10)
-      .thresholds(8)
+      .bandwidth(12)
+      .thresholds(15)
   };
 
   //Implement
