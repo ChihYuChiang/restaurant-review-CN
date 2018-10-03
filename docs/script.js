@@ -3,7 +3,7 @@
 //--Initialize data and make the initial plot
 //Shared info
 var canvas = {
-  width: window.innerWidth,
+  width: window.innerWidth - 40,
   height: window.innerHeight * 0.8,
   color_contour: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
   color_scatter: d3.schemeAccent,
@@ -141,13 +141,14 @@ function plot(targetName) {
       s4: new Tip("scatter-tooltip-s4", 3),
       s5: new Tip("scatter-tooltip-s5", 4)
     },
+    tipAdjustment: { x: 25, y: -28 },
     getTranslate: (tx, ty) => [
       (canvas.width/2 - tx) * canvas.scale - canvas.width/2 * (canvas.scale - 1),
       (canvas.height/2 - ty) * canvas.scale - canvas.height/2 * (canvas.scale - 1)
     ],
     getRefLocation: (tx, ty, rElement) => [
-      canvas.width/2 + (+d3.select(rElement).attr("cx") - tx) * canvas.scale + 35,
-      canvas.height/2 + (+d3.select(rElement).attr("cy") - ty) * canvas.scale - 25
+      canvas.width/2 + (+d3.select(rElement).attr("cx") - tx) * canvas.scale + scatterPlot.tipAdjustment.x,
+      canvas.height/2 + (+d3.select(rElement).attr("cy") - ty) * canvas.scale + scatterPlot.tipAdjustment.y
     ],
     genTipContent: (topic, pref) => {
       let content = topic + '<br><i class="fas fa-star icon-star"></i> ' + (pref ? pref : 'Haven\'t visited');
@@ -178,7 +179,7 @@ function plot(targetName) {
         .style("r", 6)
         .style("fill", canvas.color_scatter[2]);
       const tipContent = scatterPlot.genTipContent(canvas.data.topic[i], scatterPlot.pref[i]);
-      const tipCoordinate = [tx + 25, ty - 28];
+      const tipCoordinate = [tx + scatterPlot.tipAdjustment.x - 8, ty + scatterPlot.tipAdjustment.y];
       scatterPlot.tip.main.show();
       scatterPlot.tip.main.setContent8MoveTo(tipContent, tipCoordinate);
     })
@@ -209,7 +210,7 @@ function plot(targetName) {
       });
       p.then(() => {
         const tipContent_main = scatterPlot.genTipContent(canvas.data.topic[i], scatterPlot.pref[i]);
-        const tipCoordinate_main = [canvas.width/2 + 35, canvas.height/2 - 25];
+        const tipCoordinate_main = [canvas.width/2 + scatterPlot.tipAdjustment.x, canvas.height/2 + scatterPlot.tipAdjustment.y];
         scatterPlot.tip.main.setContent8MoveTo(tipContent_main, tipCoordinate_main);
         
         const rIds = canvas.data.closestneighbor[i];

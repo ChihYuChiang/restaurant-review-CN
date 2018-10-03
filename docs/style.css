@@ -19,12 +19,7 @@
   color: #FFD92F;
 }
 
-#btn-pref {
-
-}
-
 #btn-info {
-
     color: #6C757D;
 }
 #btn-info:hover {
@@ -34,6 +29,8 @@
 
 #canvas {
   position: relative;
+  margin-left: 18px;
+  margin-right: 18px;
 }
 
 #plot-title {
