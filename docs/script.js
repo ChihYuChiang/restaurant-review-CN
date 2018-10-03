@@ -3,8 +3,8 @@
 //--Initialize data and make the initial plot
 //Shared info
 var canvas = {
-  width: 960,
-  height: 500,
+  width: window.innerWidth,
+  height: window.innerHeight * 0.8,
   color_contour: d3.scaleSequential(d3.interpolateYlGnBu).domain([0, 0.05]),
   color_scatter: d3.schemeAccent,
   color_theme: d3.schemeCategory10,
@@ -21,7 +21,6 @@ let root = d3
     .select("svg")
     .attr("width", canvas.width)
     .attr("height", canvas.height)
-    .style("box-shadow", "1px 2px 4px #BFBFBF")
     .style("background-color", "#FCFCFC");
   root
     .append("g")
@@ -83,7 +82,7 @@ function plot(targetName) {
 
   //--Title
   d3.select("#plot-title")
-    .text(targetName[0].toUpperCase() + targetName.slice(1, targetName.length) + "'s Graph")
+    .text(' - ' + targetName[0].toUpperCase() + targetName.slice(1, targetName.length) + "'s Graph")
     .style("opacity", 0)
     .transition()
     .duration(600)

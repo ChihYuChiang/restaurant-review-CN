@@ -20,15 +20,11 @@
 }
 
 #btn-pref {
-  position: absolute;
-  right: 200px;
-  top: 10px;
+
 }
 
 #btn-info {
-    position: absolute;
-    right: 380px;
-    top: 17px;
+
     color: #6C757D;
 }
 #btn-info:hover {
